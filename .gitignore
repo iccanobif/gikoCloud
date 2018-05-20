@@ -573,3 +573,10 @@ config.log
 *.orig
 
 rundocker.bat
+.vscode
+/src/cli/cli
+*_autogen
+src/gui/SimpleChat
+src/gui/qrc_resources.cpp
+src/net/rpc-hash.hpp
+src/net/stage-id-hash.hpp

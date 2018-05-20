@@ -9,6 +9,7 @@ RUN apt-get -y update && apt-get -y install \
 	g++ \
 	qtdeclarative5-dev \
 	qtquickcontrols2-5-dev
+RUN apt-get -y install gperf
 
 RUN mkdir -p /src
 
