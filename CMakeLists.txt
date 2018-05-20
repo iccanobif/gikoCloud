@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.0.2)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+        "None Debug Release RelWithDebInfo MinSizeRel"
+        FORCE)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -fsanitize=undefined -fsanitize=address -fsanitize=leak")
+endif()
+
+project(freepoi)
+
+find_package(Qt5 REQUIRED COMPONENTS Quick Qml Core Network QuickControls2)
+
+add_subdirectory(src)
+# add_subdirectory(test)

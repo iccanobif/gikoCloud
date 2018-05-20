@@ -1,0 +1,35 @@
+%{
+#include <string.h>
+%}
+
+%define slot-name m_name
+%define class-name RpcHash
+%define lookup-function-name lookup
+%struct-type
+%language=C++
+%enum
+%compare-strncmp
+%null-strings
+
+struct RpcHashEntry {
+    const char *m_name;
+    int m_offset;
+};
+%%
+manageClientId,                     0
+manageLoginCount,                   1
+manageLoginAfterPasswordCheck,      2
+manageTrip,                         3
+manageStartUpAfterHashCheck,        4
+manageStageLoginCount,              5
+manageIgnoreEach,                   6
+manageSystemAlert,                  7
+manageTimeMessage,                  7
+manageGeneralMessage,               7
+manageEventList,                    8
+manageVoteEvent,                    9
+manageDeleteEvent,                  10
+manageRegisterEvent,                11
+manageEventDetail,                  12
+%%
+

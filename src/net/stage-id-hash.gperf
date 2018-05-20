@@ -1,0 +1,65 @@
+%{
+#include "stage-info.hpp"
+#include <string.h>
+
+%}
+%define slot-name m_stageId
+%define class-name StageIdHash
+%define lookup-function-name lookup
+%struct-type
+%language=C++
+%enum
+%compare-strncmp
+%null-strings
+
+struct StageIdHashEntry {
+    const char *m_stageId;
+    const CPStageInfo *m_stageInfo;
+};
+%%
+jinja,                  &CPStageInfo::Shrine
+jinja_st,               &CPStageInfo::ShrineEntrance
+long_st,                &CPStageInfo::EelTrack
+school_ground,          &CPStageInfo::Schoolyard
+school_st,              &CPStageInfo::SchoolCrossing
+school,                 &CPStageInfo::SchoolClassroom
+school_rouka,           &CPStageInfo::SchoolHallway
+school_international,   &CPStageInfo::SchoolCulturalRoom
+school_pc,              &CPStageInfo::SchoolComputerLab
+bar774,                 &CPStageInfo::Bar774
+izakaya774,             &CPStageInfo::DrunkersBar
+basement,               &CPStageInfo::UndergroundTown
+bar,                    &CPStageInfo::Bar
+bar_st,                 &CPStageInfo::BarStreet
+yatai,                  &CPStageInfo::RamenStand
+admin_st,               &CPStageInfo::AdminStreet
+admin_bar,              &CPStageInfo::AdminsBar
+admin,                  &CPStageInfo::DevelopersLounge
+enkai,                  &CPStageInfo::BanquetingHall
+cafe_st,                &CPStageInfo::CafeVista
+idoA,                   &CPStageInfo::WellA
+idoB,                   &CPStageInfo::WellB
+busstop,                &CPStageInfo::BusStop
+seashore,               &CPStageInfo::Seashore
+radio,                  &CPStageInfo::RadioStudio
+radio_room1,            &CPStageInfo::RadioRoom1
+radio_gakuya,           &CPStageInfo::DressingRoom
+radio_backstage,        &CPStageInfo::Backstage
+radio_room2,            &CPStageInfo::BeatGiko
+radio_room3,            &CPStageInfo::GSquid
+kaidan,                 &CPStageInfo::Hilltop
+takadai,                &CPStageInfo::HilltopStairway
+dogrun,                 &CPStageInfo::Dogrun
+forest,                 &CPStageInfo::Forest
+cafe,                   &CPStageInfo::Cafe
+test1,                  &CPStageInfo::Test1
+test2,                  &CPStageInfo::Test2
+test3,                  &CPStageInfo::Test3
+test4,                  &CPStageInfo::Test4
+test5,                  &CPStageInfo::Test5
+test6,                  &CPStageInfo::Test6
+test7,                  &CPStageInfo::Test7
+test8,                  &CPStageInfo::Test8
+test9,                  &CPStageInfo::Test9
+test10,                 &CPStageInfo::Test10
+%%
