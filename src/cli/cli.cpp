@@ -1,14 +1,13 @@
 #include "cli.hpp"
 #include <stdio.h>
 #include "../net/connection.hpp"
-
-ThingsDoer doer;
-CPConnection conn;
+#include <QCoreApplication>
+#include <QThread>
 
 void ThingsDoer::onHandshaken()
 {
     printf("doing stuff\n");
-    conn.connectToServer(CPConnection::Foreign, "Red");
+    conn->connectToServer(CPConnection::Foreign, "Red");
 }
 void ThingsDoer::onclientIdReceived(quint32 clientId)
 {
@@ -26,8 +25,7 @@ void ThingsDoer::ontripcodeReceived(const QByteArray &tripcode)
 }
 void ThingsDoer::onerror(const QString &str)
 {
-    printf("onerror\n");
-    printf("%s", str.toUtf8().constData());
+    printf("onerror: %s\n", str.toUtf8().constData());
 }
 void ThingsDoer::onserverResponse(bool isResult, const QString &command)
 {
@@ -35,7 +33,7 @@ void ThingsDoer::onserverResponse(bool isResult, const QString &command)
     // Connected
     if (isResult == true)
     {
-        conn.sendPassword("");
+        conn->sendPassword("");
     }
     else
     {
@@ -49,30 +47,48 @@ void ThingsDoer::onloginDetailsRequested()
 
     // if (hasTripbase())
     // {
-    //     conn.sendTripcodeBase(tripbase());
+    //     conn->sendTripcodeBase(tripbase());
     // }
     // else
     // {
-    conn.sendHash();
+    conn->sendHash();
     // }
 }
 void ThingsDoer::onwaitingForStageEntry()
 {
     printf("onwaitingForStageEntry\n");
-    conn.enterStage("jinja", CPSharedObject::Giko);
+    conn->enterStage("jinja", CPSharedObject::Giko);
 }
 void ThingsDoer::stageEntrySuccessful()
 {
     printf("Login completed\n");
 }
+
 void ThingsDoer::ondisconnected()
 {
     printf("ondisconnected\n");
 }
 
-int main()
+void ThingsDoer::launchCLI()
+{
+    emit startCLI();
+}
+
+void ThingsDoer::cliSendsMessage(char *message)
+{
+    printf("Sending message %s...\n", message);
+    // conn->sendClientMessage(&message.toUtf8().constData());
+    // free(message); // There's a memory leak, here! And this free() doesn't work, i guess because that
+    // message was malloc'd in another thread.
+}
+
+int main(int argc, char *argv[])
 {
     printf("Starting...\n");
+    QCoreApplication app(argc, argv);
+
+    CPConnection conn;
+    ThingsDoer doer(&app, &conn);
 
     QObject::connect(&conn, SIGNAL(handshaken()), &doer, SLOT(onHandshaken()));
 
@@ -88,7 +104,17 @@ int main()
 
     QObject::connect(&conn, SIGNAL(disconnected()), &doer, SLOT(ondisconnected()));
 
-    // TODO agganciare tutti i segnali di CPConnection
-    conn.connectToHost();
-    return 0;
+    // TODO make another object with its own signals and slots for the CLI
+
+    printf("Dopo le connessioni\n");
+
+    CliThread cliThread;
+
+    QObject::connect(&cliThread, SIGNAL(sendingMessageToGiko(char *)), &doer, SLOT(cliSendsMessage(char *)));
+    printf("prima dello start\n");
+    cliThread.start();
+
+    // QThread::sleep(5);
+    printf("prima del'app.exec()\n");
+    return app.exec();
 }
