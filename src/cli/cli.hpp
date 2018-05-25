@@ -8,7 +8,9 @@ class ThingsDoer : public QObject
 {
   Q_OBJECT
 public:
-  ThingsDoer(QObject *parent = 0, CPConnection *conn = 0) : QObject(parent) {}
+  ThingsDoer(QObject *parent = 0, CPConnection *conn = 0) : QObject(parent) {
+    this->conn = conn;
+  }
   void launchCLI();
 public slots:
   void startConnection();
