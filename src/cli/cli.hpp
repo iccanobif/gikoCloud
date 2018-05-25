@@ -11,6 +11,7 @@ public:
   ThingsDoer(QObject *parent = 0, CPConnection *conn = 0) : QObject(parent) {}
   void launchCLI();
 public slots:
+  void startConnection();
   void onHandshaken();
   void onclientIdReceived(quint32 clientId);
   void onloginCountChanged(quint32 loginCount);
@@ -39,7 +40,7 @@ class CliThread : public QThread
 public slots:
   void run() override
   {
-    char *line;
+    char *line = NULL;
     size_t n = 0;
 
     while (1)
@@ -48,7 +49,13 @@ public slots:
       printf("length: %d\n", (int)lineLenght);
       line[lineLenght-1] = '\0';
 
-      if (!strncmp(line, "msg ", 4))
+      printf("Parsing command '%s'\n", line);
+      if (!strcmp(line, "connect"))
+      {
+        char *message = line + 4;
+        emit startingConnection();
+      }
+      else if (!strncmp(line, "msg ", 4))
       {
         char *message = line + 4;
         emit sendingMessageToGiko(message);
@@ -59,4 +66,5 @@ public slots:
   }
 signals:
   void sendingMessageToGiko(char *);
+  void startingConnection();
 };

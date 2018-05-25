@@ -10,6 +10,7 @@ RUN apt-get -y update && apt-get -y install \
 	qtdeclarative5-dev \
 	qtquickcontrols2-5-dev
 RUN apt-get -y install gperf
+RUN apt-get -y install valgrind
 
 RUN mkdir -p /src
 

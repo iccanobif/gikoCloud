@@ -4,10 +4,15 @@
 #include <QCoreApplication>
 #include <QThread>
 
+void ThingsDoer::startConnection()
+{
+    conn->connectToHost();
+}
+
 void ThingsDoer::onHandshaken()
 {
     printf("doing stuff\n");
-    conn->connectToServer(CPConnection::Foreign, "Red");
+    conn->connectToServer(CPConnection::Foreign, "Anonymous");
 }
 void ThingsDoer::onclientIdReceived(quint32 clientId)
 {
@@ -57,7 +62,7 @@ void ThingsDoer::onloginDetailsRequested()
 void ThingsDoer::onwaitingForStageEntry()
 {
     printf("onwaitingForStageEntry\n");
-    conn->enterStage("jinja", CPSharedObject::Giko);
+    conn->enterStage("admin_st", CPSharedObject::Giko);
 }
 void ThingsDoer::stageEntrySuccessful()
 {
@@ -110,7 +115,8 @@ int main(int argc, char *argv[])
 
     CliThread cliThread;
 
-    QObject::connect(&cliThread, SIGNAL(sendingMessageToGiko(char *)), &doer, SLOT(cliSendsMessage(char *)));
+    QObject::connect(&cliThread, &CliThread::sendingMessageToGiko, &doer, &ThingsDoer::cliSendsMessage, Qt::QueuedConnection);
+    QObject::connect(&cliThread, &CliThread::startingConnection, &doer, &ThingsDoer::startConnection, Qt::QueuedConnection);
     printf("prima dello start\n");
     cliThread.start();
 
