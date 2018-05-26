@@ -42,16 +42,14 @@ class CliThread : public QThread
 public slots:
   void run() override
   {
-    char *line = NULL;
+    char *line = nullptr;
     size_t n = 0;
 
     while (1)
     {
       ssize_t lineLenght = getline(&line, &n, stdin);
-      printf("length: %d\n", (int)lineLenght);
       line[lineLenght-1] = '\0';
 
-      printf("Parsing command '%s'\n", line);
       if (!strcmp(line, "connect"))
       {
         char *message = line + 4;

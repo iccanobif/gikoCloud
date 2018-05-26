@@ -11,7 +11,7 @@ void ThingsDoer::startConnection()
 
 void ThingsDoer::onHandshaken()
 {
-    printf("doing stuff\n");
+    printf("onHandshaken\n");
     conn->connectToServer(CPConnection::Foreign, "Anonymous");
 }
 void ThingsDoer::onclientIdReceived(quint32 clientId)
@@ -35,6 +35,7 @@ void ThingsDoer::onerror(const QString &str)
 void ThingsDoer::onserverResponse(bool isResult, const QString &command)
 {
     printf("onserverResponse\n");
+    
     // Connected
     if (isResult == true)
     {
