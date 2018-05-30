@@ -15,7 +15,7 @@ endif()
 
 project(freepoi)
 
-find_package(Qt5 REQUIRED COMPONENTS Quick Qml Core Network QuickControls2)
+find_package(Qt5 REQUIRED COMPONENTS Core Network)
 
 add_subdirectory(src)
 # add_subdirectory(test)

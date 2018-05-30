@@ -4,16 +4,16 @@ RUN apt-get -y update && apt-get -y install \
 	wget \
 	git \
 	vim \
-	qtbase5-dev \
 	cmake \
 	g++ \
-	qtdeclarative5-dev \
-	qtquickcontrols2-5-dev
-RUN apt-get -y install gperf
-RUN apt-get -y install valgrind
+	gperf \
+	valgrind \
+	libxcb1-dev \
+	python
+
+RUN apt-get -y install libx11-dev
 
 RUN mkdir -p /src
-
 WORKDIR /src
 CMD ["bash"]
 
