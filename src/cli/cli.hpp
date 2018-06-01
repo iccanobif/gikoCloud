@@ -52,6 +52,7 @@ public slots:
 
       if (!strcmp(line, "connect"))
       {
+        printf("Trying to connect...\n");
         char *message = line + 4;
         emit startingConnection();
       }

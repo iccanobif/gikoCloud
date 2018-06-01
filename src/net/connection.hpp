@@ -197,7 +197,7 @@ public slots:
     inline quint32 outputChunkSize() const;
 
     inline void setProxy(const QNetworkProxy &networkProxy);
-    inline void setProxy(const QByteArray &host, const QByteArray &port);
+    inline void setProxy(const QString &hostName, const int port);
 
     inline CPChannel *inputChannel(int channel);
     inline CPChannel *outputChannel(int channel);
@@ -646,13 +646,13 @@ inline quint32 CPConnection::nextOutputSequence()
     return (this->m_lastOutputSequence + this->m_outputWindowSize);
 }
 
-void CPConnection::setProxy(const QByteArray &host, const QByteArray &port)
+void CPConnection::setProxy(const QString &hostName, const int port)
 {
     QNetworkProxy proxy;
 
     proxy.setType(QNetworkProxy::Socks5Proxy);
-    proxy.setHostName(host);
-    proxy.setPort(port.toInt());
+    proxy.setHostName(hostName);
+    proxy.setPort(port);
 
     this->setProxy(proxy);
 }

@@ -12,7 +12,7 @@ void ThingsDoer::startConnection()
 void ThingsDoer::onHandshaken()
 {
     printf("onHandshaken\n");
-    conn->connectToServer(CPConnection::Foreign, "Anonymous");
+    conn->connectToServer(CPConnection::Young, "kek");
 }
 void ThingsDoer::onclientIdReceived(quint32 clientId)
 {
@@ -63,7 +63,7 @@ void ThingsDoer::onloginDetailsRequested()
 void ThingsDoer::onwaitingForStageEntry()
 {
     printf("onwaitingForStageEntry\n");
-    conn->enterStage("admin_st", CPSharedObject::Giko);
+    conn->enterStage("school_st", CPSharedObject::Giko);
 }
 void ThingsDoer::stageEntrySuccessful()
 {
@@ -84,6 +84,7 @@ void ThingsDoer::cliSendsMessage(char *message)
 {
     printf("Sending message %s...\n", message);
     // conn->sendClientMessage(&message.toUtf8().constData());
+    conn->sendClientMessage(message);
     // free(message); // There's a memory leak, here! And this free() doesn't work, i guess because that
     // message was malloc'd in another thread.
 }
@@ -94,6 +95,9 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     CPConnection conn;
+
+    conn.setProxy("184.178.172.18", 15280);
+
     ThingsDoer doer(&app, &conn);
 
     QObject::connect(&conn, SIGNAL(handshaken()), &doer, SLOT(onHandshaken()));
@@ -109,19 +113,12 @@ int main(int argc, char *argv[])
     QObject::connect(&conn, SIGNAL(stageEntrySuccessful()), &doer, SLOT(stageEntrySuccessful()));
 
     QObject::connect(&conn, SIGNAL(disconnected()), &doer, SLOT(ondisconnected()));
-
-    // TODO make another object with its own signals and slots for the CLI
-
-    printf("Dopo le connessioni\n");
-
     CliThread cliThread;
 
     QObject::connect(&cliThread, &CliThread::sendingMessageToGiko, &doer, &ThingsDoer::cliSendsMessage, Qt::QueuedConnection);
     QObject::connect(&cliThread, &CliThread::startingConnection, &doer, &ThingsDoer::startConnection, Qt::QueuedConnection);
     printf("prima dello start\n");
     cliThread.start();
-
-    // QThread::sleep(5);
     printf("prima del'app.exec()\n");
     return app.exec();
 }
