@@ -47,4 +47,5 @@ public slots:
   void readCommand();
 signals:
   void sendMessageToGiko(const QString &msg);
+  void quit();
 };

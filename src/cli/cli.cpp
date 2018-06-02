@@ -105,10 +105,34 @@ void Controller::startCLI()
 {
     fprintf(stderr, "startCLI()\n");
 
+    QThread::sleep(5);
+    fprintf(stderr, "Finished sleeping.\n");
+
     stdinNotifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
 
     QObject::connect(this, &Controller::sendMessageToGiko, conn, &CPConnection::sendClientMessage);
     QObject::connect(stdinNotifier, &QSocketNotifier::activated, this, &Controller::readCommand);
+}
+
+void trimWhiteSpaceEnd(char *str, int length)
+{
+    for (int i = length - 1; i >= 0; i--)
+    {
+        switch (str[i])
+        {
+        case '\n':
+            str[i] = '\0';
+            break;
+        case '\r':
+            str[i] = '\0';
+            break;
+        case ' ':
+            str[i] = '\0';
+            break;
+        default:
+            return;
+        }
+    }
 }
 
 void Controller::readCommand()
@@ -117,8 +141,16 @@ void Controller::readCommand()
     char *line = nullptr;
     size_t n = 0;
 
-    ssize_t lineLenght = getline(&line, &n, stdin);
-    line[lineLenght - 1] = '\0';
+    ssize_t lineLength = getline(&line, &n, stdin);
+
+    if (lineLength == -1)
+    {
+        fprintf(stderr, "Reached EOF, logging out.\n");
+        emit quit(); // Yeah, I know this is leaving memory leaks, I don't give a shit.
+        return;
+    }
+
+    trimWhiteSpaceEnd(line, lineLength);
 
     if (!strncmp(line, "msg ", 4))
     {
@@ -142,5 +174,6 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
     Controller c(&app);
     fprintf(stderr, "before app.exec()\n");
+    QObject::connect(&c, &Controller::quit, &app, &QCoreApplication::quit);
     return app.exec();
 }

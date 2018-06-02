@@ -9,6 +9,7 @@
 #include "codec.hpp"
 #include "user-control-event.hpp"
 #include "rpc-hash.hpp"
+#include <QThread>
 
 static const char SERVER_KEY[] = "dt303eml8858792281";
 
@@ -1211,6 +1212,10 @@ void CPConnection::sendClientMessage(const QString &message)
     buf.appendAmfString(msg);
 
     this->write(buf);
+
+    fprintf(stderr, "Message sent, sleeping 2 seconds...\n");
+    QThread::sleep(2);
+    fprintf(stderr, "I'm woke now!...\n");
 }
 
 void CPConnection::sendKeepAlive()
