@@ -45,6 +45,7 @@ public:
 public slots:
   void startCLI();
   void readCommand();
+  void receiveMessageFromGiko(quint32 playerId, const QString &message);
 signals:
   void sendMessageToGiko(const QString &msg);
   void quit();

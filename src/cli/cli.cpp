@@ -14,7 +14,7 @@ ConnectionWrapper::ConnectionWrapper(QObject *parent, CPConnection *conn) : QObj
     QObject::connect(conn, &CPConnection::loginDetailsRequested, this, &ConnectionWrapper::onloginDetailsRequested);
     QObject::connect(conn, &CPConnection::waitingForStageEntry, this, &ConnectionWrapper::onwaitingForStageEntry);
     QObject::connect(conn, &CPConnection::stageEntrySuccessful, this, &ConnectionWrapper::stageEntrySuccessful);
-    QObject::connect(conn, &CPConnection::disconnected, this, &ConnectionWrapper::ondisconnected);
+    QObject::connect(conn, &CPConnection::disconnected, this, &ConnectionWrapper::ondisconnected); 
 }
 
 void ConnectionWrapper::startConnection()
@@ -111,6 +111,7 @@ void Controller::startCLI()
     stdinNotifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
 
     QObject::connect(this, &Controller::sendMessageToGiko, conn, &CPConnection::sendClientMessage);
+    QObject::connect(conn, &CPConnection::playerMessageReceived, this, &Controller::receiveMessageFromGiko);
     QObject::connect(stdinNotifier, &QSocketNotifier::activated, this, &Controller::readCommand);
 }
 
@@ -167,6 +168,11 @@ void Controller::readCommand()
         fprintf(stderr, "Unrecognized command, sorry.\n");
 
     free(line);
+}
+
+void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message)
+{
+    printf("%d: %s\n", playerId, message.toUtf8().constData());
 }
 
 int main(int argc, char *argv[])
