@@ -104,24 +104,37 @@ Controller::~Controller()
 void Controller::startCLI()
 {
     fprintf(stderr, "startCLI()\n");
+
+    stdinNotifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
+
+    QObject::connect(this, &Controller::sendMessageToGiko, conn, &CPConnection::sendClientMessage);
+    QObject::connect(stdinNotifier, &QSocketNotifier::activated, this, &Controller::readCommand);
+}
+
+void Controller::readCommand()
+{
+    // Maybe this should be able to read more than one line, if there's more than one available?
     char *line = nullptr;
     size_t n = 0;
 
-    while (1)
+    ssize_t lineLenght = getline(&line, &n, stdin);
+    line[lineLenght - 1] = '\0';
+
+    if (!strncmp(line, "msg ", 4))
     {
-        ssize_t lineLenght = getline(&line, &n, stdin);
-        line[lineLenght - 1] = '\0';
-
-        if (!strncmp(line, "msg ", 4))
-        {
-            char *message = line + 4;
-            conn->sendClientMessage(message);
-        }
-        else
-            fprintf(stderr, "Unrecognized command, sorry.\n");
-
-        free(line);
+        char *message = line + 4;
+        fprintf(stderr, "Sending message '%s'.\n", message);
+        emit sendMessageToGiko(QString::fromUtf8(message));
     }
+    else if (!strncmp(line, "msg\0", 4))
+    {
+        fprintf(stderr, "Sending empty message.\n");
+        emit sendMessageToGiko(QString());
+    }
+    else
+        fprintf(stderr, "Unrecognized command, sorry.\n");
+
+    free(line);
 }
 
 int main(int argc, char *argv[])
