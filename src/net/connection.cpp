@@ -38,11 +38,16 @@ const CPConnection::RpcHandler CPConnection::RpcTable[] = {
 
 void CPConnection::connectToHost()
 {
+    fprintf(stderr, "before m_socket.connectToHost\n");
     this->m_socket.connectToHost("tswindy.serveftp.net", 1937);
+    fprintf(stderr, "after m_socket.connectToHost\n");
+    this->m_socket.waitForConnected();
+    fprintf(stderr, "after m_socket.connectToHost\n");
 }
 
 void CPConnection::sendC1()
 {
+    fprintf(stderr,"sendC1\n");
     CPCodec c1;
     c1.append(static_cast<char>(3));
     this->m_time.start();
@@ -52,10 +57,12 @@ void CPConnection::sendC1()
 
     QObject::connect(&this->m_socket, &QTcpSocket::readyRead, this, &CPConnection::receiveS1);
     this->m_socket.write(c1);
+
 }
 
 void CPConnection::receiveS1()
 {
+    fprintf(stderr,"receiveS1\n");
     // Wait until enough data is available
     if (this->m_socket.bytesAvailable() < 1537) {
         return;
@@ -99,6 +106,7 @@ void CPConnection::receiveS1()
 
 void CPConnection::receiveS2()
 {
+    fprintf(stderr,"receiveS2\n");
     // Wait until enough bytes are available
     if (this->m_socket.bytesAvailable() < 1536) {
         return;
@@ -126,6 +134,7 @@ void CPConnection::receiveS2()
 
     // Emit a signal here so that the user can call this->connectToServer()
     // with the appropriate parameters.
+    fprintf(stderr,"about to emit this->handshaken();\n");
     emit this->handshaken();
 }
 
@@ -307,11 +316,11 @@ void CPConnection::onAmf0SharedObject()
         return;
     }
 
-    bool isPersistent;
+    // bool isPersistent;
     {
         quint32 val;
         buf.decodeInt32(&pos, &val);
-        isPersistent = (val == 2);
+        // isPersistent = (val == 2);
     }
 
     quint32 reserved;
@@ -554,7 +563,7 @@ int CPConnection::readChunk(CPCodec *buf)
     }
 
     // not enough data in the input buffer
-    if (bytesToRead > (buf->size() - i)) {
+    if (bytesToRead > (quint32)(buf->size() - i)) {
         return -1;
     }
 
@@ -1080,7 +1089,7 @@ void CPConnection::sendSharedObjectRequest(CPSharedObject *so, const QVector<CPS
         }
 
         // skip the data if only the name is to be written
-        if (event.dataSize() == CPCodec::stringSize(event.constName())) {
+        if (event.dataSize() == (quint32)CPCodec::stringSize(event.constName())) {
             continue;
         }
 
@@ -1367,15 +1376,6 @@ void CPConnection::onAnnouncement(const QByteArray &command, int index)
     QByteArray msg;
     buf.decodeAmfString(&index, &msg);
 
-    int prio;
-    if (command == "manageSystemAlert") {
-        prio = 2;
-    } else if (command == "manageTimeMessage") {
-        prio = 1;
-    } else {
-        prio = 0;
-    }
-
     emit this->announcement(0, QString::fromUtf8(msg));
 }
 
@@ -1604,11 +1604,6 @@ void CPConnection::onManageDeleteEvent(const QByteArray &command, int i)
     const CPCodec &buf = this->m_activeChannel->constBuffer();
     QByteArray res;
     buf.decodeAmfString(&i, &res);
-
-    bool deleted = false;
-    if (res == "true") {
-        deleted = true;
-    }
 
     emit this->eventDeleted(true);
 }

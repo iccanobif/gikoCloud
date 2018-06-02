@@ -3,15 +3,17 @@ cmake_minimum_required(VERSION 3.0.2)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING
-        "None Debug Release RelWithDebInfo MinSizeRel"
-        FORCE)
-endif()
+# if (NOT CMAKE_BUILD_TYPE)
+#     set(CMAKE_BUILD_TYPE Debug CACHE STRING
+#         "None Debug Release RelWithDebInfo MinSizeRel"
+#         FORCE)
+# endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -fsanitize=undefined -fsanitize=address -fsanitize=leak")
-endif()
+set(CMAKE_BUILD_TYPE Debug)
+
+# if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -fsanitize=undefined -fsanitize=address -fsanitize=leak")
+# endif()
 
 project(freepoi)
 

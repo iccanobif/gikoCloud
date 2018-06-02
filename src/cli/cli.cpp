@@ -4,38 +4,43 @@
 #include <QCoreApplication>
 #include <QThread>
 
-void ThingsDoer::startConnection()
+ConnectionWrapper::ConnectionWrapper(QObject *parent, CPConnection *conn) : QObject(parent)
 {
+    this->conn = conn;
+    QObject::connect(conn, &CPConnection::handshaken, this, &ConnectionWrapper::onHandshaken);
+    QObject::connect(conn, &CPConnection::clientIdReceived, this, &ConnectionWrapper::onclientIdReceived);
+    QObject::connect(conn, &CPConnection::error, this, &ConnectionWrapper::onerror);
+    QObject::connect(conn, &CPConnection::serverResponse, this, &ConnectionWrapper::onserverResponse);
+    QObject::connect(conn, &CPConnection::loginDetailsRequested, this, &ConnectionWrapper::onloginDetailsRequested);
+    QObject::connect(conn, &CPConnection::waitingForStageEntry, this, &ConnectionWrapper::onwaitingForStageEntry);
+    QObject::connect(conn, &CPConnection::stageEntrySuccessful, this, &ConnectionWrapper::stageEntrySuccessful);
+    QObject::connect(conn, &CPConnection::disconnected, this, &ConnectionWrapper::ondisconnected);
+}
+
+void ConnectionWrapper::startConnection()
+{
+    fprintf(stderr, "startConnection()\n");
     conn->connectToHost();
 }
 
-void ThingsDoer::onHandshaken()
+void ConnectionWrapper::onHandshaken()
 {
-    printf("onHandshaken\n");
+    fprintf(stderr, "onHandshaken\n");
     conn->connectToServer(CPConnection::Young, "kek");
 }
-void ThingsDoer::onclientIdReceived(quint32 clientId)
+void ConnectionWrapper::onclientIdReceived(quint32 clientId)
 {
-    printf("clientidreceived\n");
+    fprintf(stderr, "clientidreceived\n");
     this->clientId = clientId;
 }
-void ThingsDoer::onloginCountChanged(quint32 loginCount)
+void ConnectionWrapper::onerror(const QString &str)
 {
-    printf("onloginCountChanged\n");
-    this->loginCount = loginCount;
+    fprintf(stderr, "onerror: %s\n", str.toUtf8().constData());
 }
-void ThingsDoer::ontripcodeReceived(const QByteArray &tripcode)
+void ConnectionWrapper::onserverResponse(bool isResult, const QString &command)
 {
-    printf("ontripcodeReceived\n");
-}
-void ThingsDoer::onerror(const QString &str)
-{
-    printf("onerror: %s\n", str.toUtf8().constData());
-}
-void ThingsDoer::onserverResponse(bool isResult, const QString &command)
-{
-    printf("onserverResponse\n");
-    
+    fprintf(stderr, "onserverResponse\n");
+
     // Connected
     if (isResult == true)
     {
@@ -46,9 +51,9 @@ void ThingsDoer::onserverResponse(bool isResult, const QString &command)
         this->ondisconnected();
     }
 }
-void ThingsDoer::onloginDetailsRequested()
+void ConnectionWrapper::onloginDetailsRequested()
 {
-    printf("onloginDetailsRequested\n");
+    fprintf(stderr, "onloginDetailsRequested\n");
     // Uncomment this to use tripcodes
 
     // if (hasTripbase())
@@ -60,65 +65,69 @@ void ThingsDoer::onloginDetailsRequested()
     conn->sendHash();
     // }
 }
-void ThingsDoer::onwaitingForStageEntry()
+void ConnectionWrapper::onwaitingForStageEntry()
 {
-    printf("onwaitingForStageEntry\n");
+    fprintf(stderr, "onwaitingForStageEntry\n");
     conn->enterStage("school_st", CPSharedObject::Giko);
 }
-void ThingsDoer::stageEntrySuccessful()
+void ConnectionWrapper::stageEntrySuccessful()
 {
-    printf("Login completed\n");
+    fprintf(stderr, "Login completed\n");
+    emit connectionCompleted();
 }
 
-void ThingsDoer::ondisconnected()
+void ConnectionWrapper::ondisconnected()
 {
-    printf("ondisconnected\n");
+    fprintf(stderr, "ondisconnected\n");
 }
 
-void ThingsDoer::launchCLI()
+Controller::Controller(QObject *parent)
 {
-    emit startCLI();
+    fprintf(stderr, "Starting...\n");
+    conn = new CPConnection(parent);
+    // conn.setProxy("184.178.172.18", 15280);
+
+    connectionWrapper = new ConnectionWrapper(parent, conn);
+
+    QObject::connect(connectionWrapper, &ConnectionWrapper::connectionCompleted, this, &Controller::startCLI);
+    connectionWrapper->startConnection();
 }
 
-void ThingsDoer::cliSendsMessage(char *message)
+Controller::~Controller()
 {
-    printf("Sending message %s...\n", message);
-    // conn->sendClientMessage(&message.toUtf8().constData());
-    conn->sendClientMessage(message);
-    // free(message); // There's a memory leak, here! And this free() doesn't work, i guess because that
-    // message was malloc'd in another thread.
+}
+
+// Running the connection object in the same thread as the CLI is probably no good:
+// while getline() is blocking this thread, the connection object isn't handling incoming messages...
+// this might be okay for the initial connection when the CLI isn't accepting commands, but I probably
+// have to moveToThread() the connection after login.
+void Controller::startCLI()
+{
+    fprintf(stderr, "startCLI()\n");
+    char *line = nullptr;
+    size_t n = 0;
+
+    while (1)
+    {
+        ssize_t lineLenght = getline(&line, &n, stdin);
+        line[lineLenght - 1] = '\0';
+
+        if (!strncmp(line, "msg ", 4))
+        {
+            char *message = line + 4;
+            conn->sendClientMessage(message);
+        }
+        else
+            fprintf(stderr, "Unrecognized command, sorry.\n");
+
+        free(line);
+    }
 }
 
 int main(int argc, char *argv[])
 {
-    printf("Starting...\n");
     QCoreApplication app(argc, argv);
-
-    CPConnection conn;
-
-    conn.setProxy("184.178.172.18", 15280);
-
-    ThingsDoer doer(&app, &conn);
-
-    QObject::connect(&conn, SIGNAL(handshaken()), &doer, SLOT(onHandshaken()));
-
-    QObject::connect(&conn, SIGNAL(clientIdReceived(quint32)), &doer, SLOT(onclientIdReceived(quint32)));
-    QObject::connect(&conn, SIGNAL(loginCountChanged(quint32)), &doer, SLOT(onloginCountChanged(quint32)));
-    QObject::connect(&conn, SIGNAL(tripcodeReceived(const QByteArray)), &doer, SLOT(ontripcodeReceived(const QByteArray)));
-
-    QObject::connect(&conn, SIGNAL(error(const QString)), &doer, SLOT(onerror(const QString)));
-    QObject::connect(&conn, SIGNAL(serverResponse(bool, const QString)), &doer, SLOT(onserverResponse(bool, const QString)));
-    QObject::connect(&conn, SIGNAL(loginDetailsRequested()), &doer, SLOT(onloginDetailsRequested()));
-    QObject::connect(&conn, SIGNAL(waitingForStageEntry()), &doer, SLOT(onwaitingForStageEntry()));
-    QObject::connect(&conn, SIGNAL(stageEntrySuccessful()), &doer, SLOT(stageEntrySuccessful()));
-
-    QObject::connect(&conn, SIGNAL(disconnected()), &doer, SLOT(ondisconnected()));
-    CliThread cliThread;
-
-    QObject::connect(&cliThread, &CliThread::sendingMessageToGiko, &doer, &ThingsDoer::cliSendsMessage, Qt::QueuedConnection);
-    QObject::connect(&cliThread, &CliThread::startingConnection, &doer, &ThingsDoer::startConnection, Qt::QueuedConnection);
-    printf("prima dello start\n");
-    cliThread.start();
-    printf("prima del'app.exec()\n");
+    Controller c(&app);
+    fprintf(stderr, "before app.exec()\n");
     return app.exec();
 }

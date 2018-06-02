@@ -4,20 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-class ThingsDoer : public QObject
+class ConnectionWrapper : public QObject
 {
+  // The idea of this class is to make a single entry point to start a connection,
+  // handling the series of signals sent by CPConnection.
   Q_OBJECT
 public:
-  ThingsDoer(QObject *parent = 0, CPConnection *conn = 0) : QObject(parent) {
-    this->conn = conn;
-  }
-  void launchCLI();
+  ConnectionWrapper(QObject *parent = 0, CPConnection *conn = 0);
 public slots:
   void startConnection();
   void onHandshaken();
   void onclientIdReceived(quint32 clientId);
-  void onloginCountChanged(quint32 loginCount);
-  void ontripcodeReceived(const QByteArray &tripcode);
   void onerror(const QString &str);
   void onserverResponse(bool isResult, const QString &command);
   void onloginDetailsRequested();
@@ -25,10 +22,8 @@ public slots:
   void stageEntrySuccessful();
   void ondisconnected();
 
-  void cliSendsMessage(char *message);
-
 signals:
-  void startCLI();
+  void connectionCompleted();
 
 private:
   quint32 clientId;
@@ -36,36 +31,14 @@ private:
   CPConnection *conn;
 };
 
-class CliThread : public QThread
+class Controller : public QObject
 {
   Q_OBJECT
+  CPConnection *conn;
+  ConnectionWrapper *connectionWrapper;
+public:
+  Controller(QObject *parent = 0);
+  ~Controller();
 public slots:
-  void run() override
-  {
-    char *line = nullptr;
-    size_t n = 0;
-
-    while (1)
-    {
-      ssize_t lineLenght = getline(&line, &n, stdin);
-      line[lineLenght-1] = '\0';
-
-      if (!strcmp(line, "connect"))
-      {
-        printf("Trying to connect...\n");
-        char *message = line + 4;
-        emit startingConnection();
-      }
-      else if (!strncmp(line, "msg ", 4))
-      {
-        char *message = line + 4;
-        emit sendingMessageToGiko(message);
-      }
-      else
-        printf("Unrecognized command, sorry.\n");
-    }
-  }
-signals:
-  void sendingMessageToGiko(char *);
-  void startingConnection();
+  void startCLI();
 };
