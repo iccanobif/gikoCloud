@@ -580,3 +580,5 @@ src/gui/SimpleChat
 src/gui/qrc_resources.cpp
 src/net/rpc-hash.hpp
 src/net/stage-id-hash.hpp
+
+src/web/node_modules
