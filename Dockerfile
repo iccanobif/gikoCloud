@@ -12,6 +12,7 @@ RUN apt-get -y update && apt-get -y install \
 									python \
 									libx11-dev \
 									p7zip \
+									nodejs \
 	&& mkdir -p /qtsrc \
 	&& cd /qtsrc \
     && wget https://download.qt.io/archive/qt/5.7/5.7.1/single/qt-everywhere-opensource-src-5.7.1.7z \
@@ -33,6 +34,8 @@ RUN apt-get -y update && apt-get -y install \
     && export CMAKE_PREFIX_PATH \
 	&& mkdir -p /src \
 	&& rm -r /qtsrc
+
+RUN apt-get -y update && apt-get -y install screen
 
 WORKDIR /src
 CMD ["bash"]
