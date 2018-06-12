@@ -174,7 +174,12 @@ void Controller::readCommand()
 
 void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message)
 {
-    printf("%d: %s\n", playerId, message.toUtf8().constData());
+    //Prints username and message in JSON
+
+    fprintf(stderr, "FUCK YOU\n");
+    printf("MSG {\"user\": \"%d\", \"message\": \"%s\"}\n", 
+           playerId, 
+           QString(message).replace("\"", "\\\"").toUtf8().constData());
 }
 
 int main(int argc, char *argv[])

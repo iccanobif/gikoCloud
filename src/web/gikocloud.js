@@ -15,19 +15,20 @@ let messageQueue = [];
 socketio.on("connection", function (socket)
 {
     console.log("Connection attempt");
-
-    var user = null;
-
     socket.on("client2serverMessage", function (userName, messageContent)
     {
         try
         {
-            console.log("got message from " + userName + ": " + messageContent + ". Adding to queue.");
-
             if (messageQueue.length > 10)
+            {
+                console.log("got message from " + userName + ": " + messageContent + ".\nBut queue is full. Oops!");
                 socket.emit("server2clientMessage", "can't send message '" + messageContent + "', man, there are too many in queue.");
+            }
             else
+            {
+                console.log("got message from " + userName + ": " + messageContent + ".\nAdding to queue.");
                 messageQueue.push(userName + ": " + messageContent);
+            }
         }
         catch (e)
         {
@@ -44,14 +45,15 @@ setInterval(() =>
         if (messageToSend == undefined)
             return;
 
-            // backendProcess.stdin.write("msg " + messageToSend);
-        socketio.emit("server2clientMessage", messageToSend); // send to all connected sockets
+        messageToSend = messageToSend.replace(/\n/g, "");
+
+        console.log("Trying to send " + messageToSend + " to backend");
+        backendProcess.stdin.write("msg " + messageToSend + "\n");
     }
     catch (e)
     {
         printError(e);
     }
-
 }, 1000);
 
 app.get("/", function (req, res)
@@ -70,33 +72,23 @@ app.get("/", function (req, res)
         printError(e);
     }
 });
-
-// let i = 0;
-// setInterval(() => {
-//     console.log("trying to send message to clients");
-//     socketio.emit("server2clientMessage", "suck my dicko " + i++); // send to all connected sockets
-// }, 1000);
-
-
-
-// var backendProcess = child_process.spawn("/src/src/cli/cli");
-
-// //backendProcess.stdout.on("data", data => console.log("Message from the backend (stdout): " + data));
-// backendProcess.stdout.on("data", function (data)
-// {
-//     console.log("Message from the backend (stdout): " + data);
-// });
-
-// backendProcess.stderr.on("data", function (data)
-// {
-//     console.log("Message from the backend (stderr): " + data);
-// });
-
 app.use(express.static('static', {
     "maxAge": 24 * 60 * 60 * 1000 // 1 day in milliseconds
 }));
+
+var backendProcess = child_process.spawn("/src/src/cli/cli");
+backendProcess.stdout.on("data", function (data)
+{
+    console.log("shit");
+    // Careful, "data" might contain more than one line.
+    console.log("Message from the backend (stdout): " + String(data).trim());
+});
+backendProcess.stderr.on("data", function (data)
+{
+    console.log("Message from the backend (stderr): " + String(data).trim());
+});
+
+
 http.listen(8080, "0.0.0.0");
 
 console.log("Server running");
-
-// backendProcess.stdin.write("msg lol");
