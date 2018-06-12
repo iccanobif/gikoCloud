@@ -1,0 +1,9 @@
+#divLog {
+    height: 200px;
+    overflow-y: auto;
+}
+
+body {
+    color: red;
+    background-color: black;
+}
