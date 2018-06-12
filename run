@@ -1,1 +1,3 @@
-src/cli/cli
+# src/cli/cli
+cd src/web
+node gikocloud.js

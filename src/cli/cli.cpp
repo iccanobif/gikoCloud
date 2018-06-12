@@ -108,48 +108,6 @@ void Controller::startCLI()
     QThread::sleep(5);
     fprintf(stderr, "Finished sleeping.\n");
 
-/*
-    int sock, msgsock, rval;
-    struct sockaddr_un server;
-    char buf[1024];
-
-    sock = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (sock < 0)
-    {
-        perror("opening stream socket");
-        exit(1);
-    }
-    server.sun_family = AF_UNIX;
-    strcpy(server.sun_path, NAME);
-    if (bind(sock, (struct sockaddr *)&server, sizeof(struct sockaddr_un)))
-    {
-        perror("binding stream socket");
-        exit(1);
-    }
-    printf("Socket has name %s\n", server.sun_path);
-    listen(sock, 5);
-    for (;;)
-    {
-        msgsock = accept(sock, 0, 0);
-        if (msgsock == -1)
-            perror("accept");
-        else
-            do
-            {
-                bzero(buf, sizeof(buf));
-                if ((rval = read(msgsock, buf, 1024)) < 0)
-                    perror("reading stream message");
-                else if (rval == 0)
-                    printf("Ending connection\n");
-                else
-                    printf("-->%s\n", buf);
-            } while (rval > 0);
-        close(msgsock);
-    }
-    close(sock);
-    unlink(NAME);
-*/
-
     stdinNotifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
 
     QObject::connect(this, &Controller::sendMessageToGiko, conn, &CPConnection::sendClientMessage);
@@ -180,6 +138,8 @@ void trimWhiteSpaceEnd(char *str, int length)
 
 void Controller::readCommand()
 {
+    // TODO: I can use QTextStream instead.
+
     // Maybe this should be able to read more than one line, if there's more than one available?
     char *line = nullptr;
     size_t n = 0;

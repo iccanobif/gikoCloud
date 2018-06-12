@@ -8,5 +8,10 @@ $(function ()
 	{
 		gikoClient.sendMessage(txtUsername.value, txtMessage.value);
 	});
+
+	gikoClient.setMessageHandler((message) =>
+	{
+		console.log("arrivato messaggio " + message);
+	});
 }
 );
