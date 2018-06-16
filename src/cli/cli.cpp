@@ -176,10 +176,11 @@ void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message
 {
     //Prints username and message in JSON
 
-    fprintf(stderr, "FUCK YOU\n");
-    printf("MSG {\"user\": \"%d\", \"message\": \"%s\"}\n", 
+    fprintf(stderr, "about to write to stdout\n");
+    fprintf(stdout, "MSG {\"user\": \"%d\", \"message\": \"%s\"}\n", 
            playerId, 
            QString(message).replace("\"", "\\\"").toUtf8().constData());
+    fprintf(stderr, "just wrote to stdout\n");
 }
 
 int main(int argc, char *argv[])
