@@ -1,6 +1,5 @@
 #include "connectionwrapper.hpp"
 
-
 ConnectionWrapper::ConnectionWrapper(QObject *parent, 
                                      CPConnection *conn,
                                      CliParameters *cliParameters) : QObject(parent)
@@ -68,7 +67,7 @@ void ConnectionWrapper::onloginDetailsRequested()
 void ConnectionWrapper::onwaitingForStageEntry()
 {
     fprintf(stderr, "onwaitingForStageEntry\n");
-    conn->enterStage("admin", CPSharedObject::Giko); // Dev lounge
+    conn->enterStage(this->cliParameters->room.name(), this->cliParameters->character);
 }
 void ConnectionWrapper::stageEntrySuccessful()
 {

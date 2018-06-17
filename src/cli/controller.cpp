@@ -8,10 +8,12 @@ Controller::Controller(CliParameters *cliParameters, QObject *parent)
 {
     fprintf(stderr, "Starting...\n");
     conn = new CPConnection(parent);
-    // conn.setProxy("184.178.172.18", 15280);
+    if (cliParameters->proxyHostname != nullptr)
+    {
+        conn->setProxy(cliParameters->proxyHostname, cliParameters->proxyPort);
+    }
+    
     this->cliParameters = cliParameters;
-
-    fprintf(stderr, "%s", cliParameters->username.toUtf8().constData());
 
     connectionWrapper = new ConnectionWrapper(parent, conn, this->cliParameters);
 
