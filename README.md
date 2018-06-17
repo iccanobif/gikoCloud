@@ -11,6 +11,10 @@ docker run --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -ti \
 ```
 You can build everything and start the node.js server from inside the docker with 
 ```
-make && ./run
+cd src/web
+npm install
+cd ../..
+make
+./run
 ```
 and then open the web page pointing a browser to `http://localhost:8080`.
