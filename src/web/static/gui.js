@@ -2,6 +2,7 @@ $(function ()
 {
 	let gikoClient = new GikoClient();
 	let btnSend = document.getElementById("btnSend");
+	let btnClearBubble = document.getElementById("btnClearBubble");
 	let txtUsername = document.getElementById("txtUsername");
 	let txtMessage = document.getElementById("txtMessage");
 	let divLog = document.getElementById("divLog");
@@ -9,6 +10,11 @@ $(function ()
 	btnSend.addEventListener("click", function ()
 	{
 		gikoClient.sendMessage(txtUsername.value, txtMessage.value);
+	});
+
+	btnClearBubble.addEventListener("click", function ()
+	{
+		gikoClient.sendMessage("", "");
 	});
 
 	let messageList = [];

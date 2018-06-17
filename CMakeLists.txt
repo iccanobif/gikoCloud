@@ -12,7 +12,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_BUILD_TYPE Debug)
 
 # if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -fsanitize=undefined -fsanitize=address -fsanitize=leak")
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+    # set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -fsanitize=undefined -fsanitize=address -fsanitize=leak")
 # endif()
 
 project(freepoi)

@@ -27,7 +27,7 @@ void ConnectionWrapper::startConnection()
 void ConnectionWrapper::onHandshaken()
 {
     fprintf(stderr, "onHandshaken\n");
-    conn->connectToServer(CPConnection::Young, "kek");
+    conn->connectToServer(CPConnection::Foreign, " "); // That blank space is the username
 }
 void ConnectionWrapper::onclientIdReceived(quint32 clientId)
 {
@@ -69,7 +69,7 @@ void ConnectionWrapper::onloginDetailsRequested()
 void ConnectionWrapper::onwaitingForStageEntry()
 {
     fprintf(stderr, "onwaitingForStageEntry\n");
-    conn->enterStage("school_st", CPSharedObject::Giko);
+    conn->enterStage("admin", CPSharedObject::Giko); // Dev lounge
 }
 void ConnectionWrapper::stageEntrySuccessful()
 {

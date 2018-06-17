@@ -28,7 +28,10 @@ socketio.on("connection", (socket) =>
             else
             {
                 console.log("got message from " + userName + ": " + messageContent + ".\nAdding to queue.");
-                messageQueue.push(userName + ": " + messageContent);
+                if (userName == "" && messageContent == "")
+                    messageQueue.push("");    // Clears bubble
+                else
+                    messageQueue.push(userName + ": " + messageContent);
             }
         }
         catch (e)
@@ -81,6 +84,8 @@ function gotMessageFromGikopoi(msg)
 {
     // TODO: put all messages in a log file, and in a buffer in memory, so that
     // new users can get at least a few lines of log as soon as they "log in"
+
+    
     console.log("Message from backend: " + msg);
     socketio.emit("server2clientMessage", msg);
 }
@@ -92,6 +97,8 @@ backendProcess.stdout.on("data", (data) =>
     {
         if (line.startsWith("MSG "))
         {
+            // this message made gikocloud.js print some weird stuff
+            // {"user": "1", "message": "7/31 8/1 8:00 宴会場 「第１１回夏祭りギコSUMMER!」 ついに１０周年！詳細は#ｲﾍﾞﾝﾄ！ "}
             gotMessageFromGikopoi(line.substring(4));
         }
         else
