@@ -1213,8 +1213,8 @@ void CPConnection::sendClientMessage(const QString &message)
 
     this->write(buf);
 
-    fprintf(stderr, "Message sent, sleeping 2 seconds...\n");
-    QThread::sleep(2);
+    fprintf(stderr, "Message sent, sleeping 1 second...\n");
+    QThread::sleep(1);
     fprintf(stderr, "I'm woke now!...\n");
 }
 
