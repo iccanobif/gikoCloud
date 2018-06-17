@@ -76,16 +76,32 @@ app.use(express.static('static', {
     "maxAge": 24 * 60 * 60 * 1000 // 1 day in milliseconds
 }));
 
+function gotMessageFromGikopoi(msg)
+{
+    // TODO: put all messages in a log file, and in a buffer in memory, so that
+    // new users can get at least a few lines of log as soon as they "log in"
+    console.log("Message from backend: " + msg);
+    socketio.emit("server2clientMessage", msg);
+}
+
 var backendProcess = child_process.spawn("/src/src/cli/cli");
 backendProcess.stdout.on("data", function (data)
 {
-    console.log("shit");
-    // Careful, "data" might contain more than one line.
-    console.log("Message from the backend (stdout): " + String(data).trim());
+    String(data).trim().split("\n").forEach((line) =>
+    {
+        if (line.startsWith("MSG "))
+        {
+            gotMessageFromGikopoi(line.substring(4));
+        }
+        else
+        {
+            console.log("Got weird message from cli: " + line);
+        }
+    });
 });
 backendProcess.stderr.on("data", function (data)
 {
-    console.log("Message from the backend (stderr): " + String(data).trim());
+    console.log("[cli] (stderr): " + String(data).trim());
 });
 
 

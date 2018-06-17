@@ -3,6 +3,7 @@
 #include "../net/connection.hpp"
 #include <QCoreApplication>
 #include <QThread>
+#include <unistd.h>
 
 ConnectionWrapper::ConnectionWrapper(QObject *parent, CPConnection *conn) : QObject(parent)
 {
@@ -175,12 +176,14 @@ void Controller::readCommand()
 void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message)
 {
     //Prints username and message in JSON
-
-    fprintf(stderr, "about to write to stdout\n");
-    fprintf(stdout, "MSG {\"user\": \"%d\", \"message\": \"%s\"}\n", 
-           playerId, 
-           QString(message).replace("\"", "\\\"").toUtf8().constData());
-    fprintf(stderr, "just wrote to stdout\n");
+    
+    char msgToPrint[10000];
+    int msgToPrintLenght = sprintf(msgToPrint, "MSG {\"user\": \"%d\", \"message\": \"%s\"}\n",
+                                   playerId,
+                                   QString(message).replace("\"", "\\\"").toUtf8().constData());
+    // Directly using write() because for reasons I don't understand, printf() doesn't work (won't even call
+    // write() as I could see from strace) when this program is run as a child_process from node.js...
+    write(1, msgToPrint, msgToPrintLenght);
 }
 
 int main(int argc, char *argv[])
