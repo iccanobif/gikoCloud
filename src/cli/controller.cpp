@@ -2,13 +2,18 @@
 #include <unistd.h>
 #include <QThread>
 #include "controller.hpp"
+#include "cliparameters.hpp"
 
-Controller::Controller(QObject *parent)
+Controller::Controller(CliParameters *cliParameters, QObject *parent)
 {
     fprintf(stderr, "Starting...\n");
     conn = new CPConnection(parent);
     // conn.setProxy("184.178.172.18", 15280);
-    connectionWrapper = new ConnectionWrapper(parent, conn);
+    this->cliParameters = cliParameters;
+
+    fprintf(stderr, "%s", cliParameters->username.toUtf8().constData());
+
+    connectionWrapper = new ConnectionWrapper(parent, conn, this->cliParameters);
 
     QObject::connect(connectionWrapper, &ConnectionWrapper::connectionCompleted, this, &Controller::startCLI);
     connectionWrapper->startConnection();

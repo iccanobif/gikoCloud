@@ -1,9 +1,12 @@
 #include "connectionwrapper.hpp"
 
 
-ConnectionWrapper::ConnectionWrapper(QObject *parent, CPConnection *conn) : QObject(parent)
+ConnectionWrapper::ConnectionWrapper(QObject *parent, 
+                                     CPConnection *conn,
+                                     CliParameters *cliParameters) : QObject(parent)
 {
     this->conn = conn;
+    this->cliParameters = cliParameters;
     QObject::connect(conn, &CPConnection::handshaken, this, &ConnectionWrapper::onHandshaken);
     QObject::connect(conn, &CPConnection::clientIdReceived, this, &ConnectionWrapper::onclientIdReceived);
     QObject::connect(conn, &CPConnection::error, this, &ConnectionWrapper::onerror);
@@ -23,7 +26,7 @@ void ConnectionWrapper::startConnection()
 void ConnectionWrapper::onHandshaken()
 {
     fprintf(stderr, "onHandshaken\n");
-    conn->connectToServer(CPConnection::Young, " "); // That blank space is the username
+    conn->connectToServer(this->cliParameters->server, this->cliParameters->username);
 }
 void ConnectionWrapper::onclientIdReceived(quint32 clientId)
 {

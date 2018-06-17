@@ -3,14 +3,20 @@
 
 #include <QObject>
 #include "../net/connection.hpp"
+#include "cliparameters.hpp"
 
 class ConnectionWrapper : public QObject
 {
   // The idea of this class is to make a single entry point to start a connection,
   // handling the series of signals sent by CPConnection.
   Q_OBJECT
+
+  CliParameters *cliParameters;
+
 public:
-  ConnectionWrapper(QObject *parent = 0, CPConnection *conn = 0);
+  ConnectionWrapper(QObject *parent, 
+                    CPConnection *conn, 
+                    CliParameters *cliParameters);
 public slots:
   void startConnection();
   void onHandshaken();

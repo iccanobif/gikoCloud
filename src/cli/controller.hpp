@@ -5,6 +5,7 @@
 #include <QSocketNotifier>
 #include "../net/connection.hpp"
 #include "connectionwrapper.hpp"
+#include "cliparameters.hpp"
 
 class Controller : public QObject
 {
@@ -12,9 +13,10 @@ class Controller : public QObject
   CPConnection *conn;
   ConnectionWrapper *connectionWrapper;
   QSocketNotifier *stdinNotifier;
+  CliParameters *cliParameters;
 
 public:
-  Controller(QObject *parent = 0);
+  Controller(CliParameters *cliParameters, QObject *parent = 0);
   ~Controller();
 public slots:
   void startCLI();
@@ -24,6 +26,5 @@ signals:
   void sendMessageToGiko(const QString &msg);
   void quit();
 };
-
 
 #endif // CLI_CONTROLLER
