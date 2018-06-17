@@ -1,9 +1,10 @@
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
-var fs = require('fs');
-var socketio = require("socket.io")(http);
-var child_process = require("child_process");
+let express = require('express');
+let app = express();
+let http = require('http').Server(app);
+let fs = require('fs');
+let socketio = require("socket.io")(http);
+let child_process = require("child_process");
+let config = require("./config.js");
 
 function printError(e)
 {
@@ -12,10 +13,10 @@ function printError(e)
 
 let messageQueue = [];
 
-socketio.on("connection", function (socket)
+socketio.on("connection", (socket) =>
 {
     console.log("Connection attempt");
-    socket.on("client2serverMessage", function (userName, messageContent)
+    socket.on("client2serverMessage", (userName, messageContent) =>
     {
         try
         {
@@ -56,12 +57,12 @@ setInterval(() =>
     }
 }, 1000);
 
-app.get("/", function (req, res)
+app.get("/", (req, res) =>
 {
     try
     {
         res.writeHead(200, { 'Content-Type': 'text/html' });
-        fs.readFile("static/home.htm", function (err, data)
+        fs.readFile("static/home.htm", (err, data) =>
         {
             if (err) res.end(err);
             else res.end(data);
@@ -84,8 +85,8 @@ function gotMessageFromGikopoi(msg)
     socketio.emit("server2clientMessage", msg);
 }
 
-var backendProcess = child_process.spawn("/src/src/cli/cli");
-backendProcess.stdout.on("data", function (data)
+var backendProcess = child_process.spawn(config.getParameter("cli_path"));
+backendProcess.stdout.on("data", (data) =>
 {
     String(data).trim().split("\n").forEach((line) =>
     {
@@ -99,11 +100,10 @@ backendProcess.stdout.on("data", function (data)
         }
     });
 });
-backendProcess.stderr.on("data", function (data)
+backendProcess.stderr.on("data", (data) =>
 {
     console.log("[cli] (stderr): " + String(data).trim());
 });
-
 
 http.listen(8080, "0.0.0.0");
 
