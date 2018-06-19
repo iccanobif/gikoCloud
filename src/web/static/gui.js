@@ -19,15 +19,26 @@ $(function ()
 
 	let messageList = [];
 
+	function renderMessageList()
+	{
+		divLog.innerHTML = messageList.join("<br />");
+		// Scroll to bottom. Might be nice to avoid that if the log wasn't already scrolled to bottom.
+		divLog.scrollTop = divLog.scrollHeight;
+	};
+
 	gikoClient.setMessageHandler((message) =>
 	{
 		console.log("arrivato messaggio " + message);
 		messageList.push(message);
 		if (messageList.length > 10)
 			messageList = messageList.slice(1); // Removes the first value
-		divLog.innerHTML = messageList.join("<br />");
-		// Scroll to bottom. Might be nice to avoid that if the log wasn't already scrolled to bottom.
-		divLog.scrollTop = divLog.scrollHeight;
+		renderMessageList();
 	});
-}
-);
+
+	gikoClient.setUpdateLogHandler((log) =>
+	{
+		console.log(log);
+		messageList = log;
+		renderMessageList();
+	})
+});

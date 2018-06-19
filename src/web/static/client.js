@@ -7,15 +7,13 @@ var GikoClient = function ()
         socket.emit("client2serverMessage", userName, messageContent);
     };
 
-    let messageHandler = null;
     this.setMessageHandler = function (callback)
     {
-        this.messageHandler = callback;
+        socket.on("server2clientMessage", callback);
     };
 
-    socket.on("server2clientMessage", (message) =>
+    this.setUpdateLogHandler = function(callback)
     {
-        if (this.messageHandler != null)
-            this.messageHandler(message);
-    });
+        socket.on("updateLog", callback);
+    };
 }
