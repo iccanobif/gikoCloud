@@ -19,6 +19,8 @@ Controller::Controller(CliParameters *cliParameters, QObject *parent)
 
     QObject::connect(connectionWrapper, &ConnectionWrapper::connectionCompleted, this, &Controller::startCLI);
     connectionWrapper->startConnection();
+
+    QObject::connect(conn, &CPConnection::playerNameReceived, this, &Controller::receivePlayerName);
 }
 
 Controller::~Controller()
@@ -105,10 +107,24 @@ void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message
     //Prints username and message in JSON
 
     char msgToPrint[10000];
-    int msgToPrintLenght = sprintf(msgToPrint, "MSG {\"user\": \"%d\", \"message\": \"%s\"}\n",
+    int msgToPrintLenght = sprintf(msgToPrint, "MSG {\"playerId\": %d, \"playerName\": \"%s\", \"message\": \"%s\"}\n",
                                    playerId,
+                                   playerNames[playerId].replace("\"", "\\\"").toUtf8().constData(),
                                    QString(message).replace("\"", "\\\"").toUtf8().constData());
     // Directly using write() because for reasons I don't understand, printf() doesn't work (won't even call
     // write() as I could see from strace) when this program is run as a child_process from node.js...
     write(1, msgToPrint, msgToPrintLenght);
+}
+
+void Controller::receivePlayerName(quint32 playerId, const QString &playerName)
+{
+    char msgToPrint[10000];
+    int msgToPrintLenght = sprintf(msgToPrint, "PLAYER_ID {\"playerId\": %d, \"playerName\": \"%s\"}\n",
+                                   playerId,
+                                   QString(playerName).replace("\"", "\\\"").toUtf8().constData());
+    // Directly using write() because for reasons I don't understand, printf() doesn't work (won't even call
+    // write() as I could see from strace) when this program is run as a child_process from node.js...
+    write(1, msgToPrint, msgToPrintLenght);
+
+    playerNames[playerId] = playerName;
 }
