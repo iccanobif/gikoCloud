@@ -390,6 +390,7 @@ void CPConnection::onAmf0Command()
 
         if (isResult) {
             this->m_timer.start(59900);
+            this->m_timerForAvoidingTimeouts.start(1000*60*20); // 20 minutes
         } else {
             this->close();
         }
@@ -442,6 +443,7 @@ CPConnection::CPConnection(QObject *parent) :
     m_inputBuffer(),
     m_time(),
     m_timer(),
+    m_timerForAvoidingTimeouts(),
 
     m_inputChunkSize(128),
     m_outputChunkSize(128),
@@ -466,6 +468,7 @@ CPConnection::CPConnection(QObject *parent) :
     QObject::connect(&this->m_socket, static_cast<socketErrorMethod>(&QAbstractSocket::error),
                      this, &CPConnection::onSocketError);
     QObject::connect(&this->m_timer, &QTimer::timeout, this, &CPConnection::sendKeepAlive);
+    QObject::connect(&this->m_timerForAvoidingTimeouts, &QTimer::timeout, this, &CPConnection::preventTimeout);
 }
 
 int CPConnection::readChunk(CPCodec *buf)
@@ -1346,6 +1349,7 @@ void CPConnection::close()
 {
     QObject::disconnect(&this->m_socket, &QIODevice::readyRead, 0, 0);
     this->m_timer.stop();
+    this->m_timerForAvoidingTimeouts.stop();
     this->m_socket.close();
 }
 
@@ -1810,4 +1814,9 @@ CPChannel *CPConnection::channel(ChunkCache &cache, int channel)
     }
 
     return &cache[channel - 2];
+}
+
+void CPConnection::preventTimeout()
+{
+    sendClientMessage(QString(""));
 }

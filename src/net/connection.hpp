@@ -56,6 +56,7 @@ private:
     CPCodec m_inputBuffer;
     QTime m_time;
     QTimer m_timer;
+    QTimer m_timerForAvoidingTimeouts;
     quint32 m_inputChunkSize;
     quint32 m_outputChunkSize;
 
@@ -242,6 +243,9 @@ public slots:
      * Check if an acknowledgement must be sent to the peer.
      */
     inline bool mustSendAcknowledgement();
+    
+    // Send empty message to prevent timeouts
+    void preventTimeout();
 private:
     /**
      * Parses the server response to requestStageLoginInfo().
