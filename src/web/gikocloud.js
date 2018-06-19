@@ -6,28 +6,36 @@ let socketio = require("socket.io")(http);
 let child_process = require("child_process");
 let config = require("./config.js");
 
+function log(msg)
+{
+    let d = new Date();
+    console.log("[" + d.toISOString() + "] " + msg);
+}
+
 function printError(e)
 {
-    console.log(e.message + " " + e.stack);
+    log(e.message + " " + e.stack);
 };
 
 let messageQueue = [];
 
 socketio.on("connection", (socket) =>
 {
-    console.log("Connection attempt");
+    log("Connection attempt");
+    socket.emit("updateLog", messagesFromServer);
+
     socket.on("client2serverMessage", (userName, messageContent) =>
     {
         try
         {
             if (messageQueue.length > 10)
             {
-                console.log("got message from " + userName + ": " + messageContent + ".\nBut queue is full. Oops!");
+                log("got message from " + userName + ": " + messageContent + ".\nBut queue is full. Oops!");
                 socket.emit("server2clientMessage", "can't send message '" + messageContent + "', man, there are too many in queue.");
             }
             else
             {
-                console.log("got message from " + userName + ": " + messageContent + ".\nAdding to queue.");
+                log("got message from " + userName + ": " + messageContent + ".\nAdding to queue.");
                 if (userName == "" && messageContent == "")
                     messageQueue.push("");    // Clears bubble
                 else
@@ -51,7 +59,7 @@ setInterval(() =>
 
         messageToSend = messageToSend.replace(/\n/g, "");
 
-        console.log("Trying to send " + messageToSend + " to backend");
+        log("Trying to send " + messageToSend + " to backend");
         backendProcess.stdin.write("msg " + messageToSend + "\n");
     }
     catch (e)
@@ -80,17 +88,36 @@ app.use(express.static('static', {
     "maxAge": 24 * 60 * 60 * 1000 // 1 day in milliseconds
 }));
 
+let messagesFromServer = [];
+
 function gotMessageFromGikopoi(msg)
 {
     // TODO: put all messages in a log file, and in a buffer in memory, so that
     // new users can get at least a few lines of log as soon as they "log in"
 
-    
-    console.log("Message from backend: " + msg);
+    log("Message from backend: " + msg);
+    messagesFromServer.push(msg);
     socketio.emit("server2clientMessage", msg);
+
+    if (messagesFromServer.length > 100)
+    {
+        messagesFromServer.shift();
+    }
 }
 
-var backendProcess = child_process.spawn(config.getParameter("cli_path"));
+// I bet there's a much better SICP-y way of doing this...
+let parameters = [];
+[["-u", "userName"], ["-s", "server"], ["-r", "room"], ["-p", "proxy"]].map((x) =>
+{
+    let val = config.getParameter(x[1]);
+    if (val != undefined) 
+    {
+        parameters.push(x[0]);
+        parameters.push(val);
+    }
+});
+
+var backendProcess = child_process.spawn(config.getParameter("cli_path"), parameters);
 backendProcess.stdout.on("data", (data) =>
 {
     String(data).trim().split("\n").forEach((line) =>
@@ -103,15 +130,20 @@ backendProcess.stdout.on("data", (data) =>
         }
         else
         {
-            console.log("Got weird message from cli: " + line);
+            log("Got weird message from cli: " + line);
         }
     });
 });
 backendProcess.stderr.on("data", (data) =>
 {
-    console.log("[cli] (stderr): " + String(data).trim());
+    log("[cli] (stderr): " + String(data).trim());
+});
+backendProcess.on("exit", (code, signal) =>
+{
+    log("Backend process died...");
+    //TODO Restart the process
 });
 
 http.listen(8080, "0.0.0.0");
 
-console.log("Server running");
+log("Server running");
