@@ -9,12 +9,6 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     CliParameters params;
-    params.username = QString(" ");
-    params.server = CPConnection::Foreign;
-    params.room = CPStageInfo::DevelopersLounge;
-    params.character = CPSharedObject::Boon;
-    // params.proxyHostname = "188.120.255.230";
-    // params.proxyPort = 6677;
 
     for (int i = 1; i < argc; i++)
     {
@@ -81,6 +75,9 @@ int main(int argc, char *argv[])
             return -1;
         }
     }
+
+    fprintf(stderr, "Starting with these settings:\n");
+    fprintf(stderr, "%s\n", params.parameterSummary().toUtf8().constData());
 
     Controller c(&params, &app);
 
