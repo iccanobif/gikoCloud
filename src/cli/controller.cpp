@@ -12,7 +12,7 @@ Controller::Controller(CliParameters *cliParameters, QObject *parent)
     {
         conn->setProxy(cliParameters->proxyHostname, cliParameters->proxyPort);
     }
-    
+
     this->cliParameters = cliParameters;
 
     connectionWrapper = new ConnectionWrapper(parent, conn, this->cliParameters);
@@ -41,7 +41,9 @@ void Controller::startCLI()
     stdinNotifier = new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this);
 
     QObject::connect(this, &Controller::sendMessageToGiko, conn, &CPConnection::sendClientMessage);
+    QObject::connect(this, &Controller::sendNewPositionToGiko, conn, &CPConnection::sendPosition);
     QObject::connect(conn, &CPConnection::playerMessageReceived, this, &Controller::receiveMessageFromGiko);
+    QObject::connect(conn, &CPConnection::playerPositionChanged, this, &Controller::receivePlayerPosition);
     QObject::connect(stdinNotifier, &QSocketNotifier::activated, this, &Controller::readCommand);
 }
 
@@ -96,9 +98,48 @@ void Controller::readCommand()
         fprintf(stderr, "Sending empty message.\n");
         emit sendMessageToGiko(QString());
     }
+    else if (!strncmp(line, "move ", 5))
+    {
+        QStringList splits = QString::fromUtf8(line).split(QChar(' '));
+
+        if (splits.count() != 4)
+        {
+            fprintf(stderr, "No good.\n");
+            goto END;
+        }
+
+        bool convertedOk = false;
+        int x = splits.at(1).toInt(&convertedOk);
+        if (!convertedOk)
+        {
+            fprintf(stderr, "%s is not a good number.\n", splits[1].toUtf8().constData());
+            goto END;
+        }
+        int y = splits.at(2).toInt(&convertedOk);
+        if (!convertedOk)
+        {
+            fprintf(stderr, "%s is not a good number.\n", splits[2].toUtf8().constData());
+            goto END;
+        }
+        CPSharedObject::Direction dir;
+        if (splits.at(3) == "up")
+            dir = CPSharedObject::Up;
+        else if (splits.at(3) == "down")
+            dir = CPSharedObject::Down;
+        else if (splits.at(3) == "left")
+            dir = CPSharedObject::Left;
+        else if (splits.at(3) == "right")
+            dir = CPSharedObject::Right;
+        else
+            fprintf(stderr, "Direction no good.\n");
+
+        fprintf(stderr, "Movan to %d %d.\n", x, y);
+        emit sendNewPositionToGiko(x, y, dir);
+    }
     else
         fprintf(stderr, "Unrecognized command, sorry.\n");
 
+END:
     free(line);
 }
 
@@ -106,7 +147,8 @@ void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message
 {
     //Prints username and message in JSON
 
-    char msgToPrint[10000];
+    //TODO just concatenate a series of QStrings and then conver them to constData, no need to use sprintf()
+    char msgToPrint[10000]; 
     int msgToPrintLenght = sprintf(msgToPrint, "MSG {\"playerId\": %d, \"playerName\": \"%s\", \"message\": \"%s\"}\n",
                                    playerId,
                                    playerNames[playerId].replace("\"", "\\\"").toUtf8().constData(),
@@ -119,12 +161,19 @@ void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message
 void Controller::receivePlayerName(quint32 playerId, const QString &playerName)
 {
     char msgToPrint[10000];
-    int msgToPrintLenght = sprintf(msgToPrint, "PLAYER_ID {\"playerId\": %d, \"playerName\": \"%s\"}\n",
+    int msgToPrintLenght = sprintf(msgToPrint, "PLAYER_NAME {\"playerId\": %d, \"playerName\": \"%s\"}\n",
                                    playerId,
                                    QString(playerName).replace("\"", "\\\"").toUtf8().constData());
-    // Directly using write() because for reasons I don't understand, printf() doesn't work (won't even call
-    // write() as I could see from strace) when this program is run as a child_process from node.js...
     write(1, msgToPrint, msgToPrintLenght);
-
     playerNames[playerId] = playerName;
+}
+
+void Controller::receivePlayerPosition(quint32 playerId, int xPos, int yPos)
+{
+    char msgToPrint[10000];
+    int msgToPrintLenght = sprintf(msgToPrint, "PLAYER_POSITION {\"playerId\": %d, \"x\": %d, \"y\": %d}\n",
+                                   playerId,
+                                   xPos,
+                                   yPos);
+    write(1, msgToPrint, msgToPrintLenght);
 }

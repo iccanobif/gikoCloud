@@ -3,7 +3,7 @@ mkdir -p DeployPackage
 rm -rf DeployPackage/*
 cp -r src/web/* DeployPackage
 cp src/cli/cli DeployPackage
-echo ""{\"cli_path\": \"./cli\"}"" > DeployPackage/config
+echo ""{\"cli_path\": \"./cli\", \"room\": \"bar\"}"" > DeployPackage/config
 tar -czf deploy.tar.gz DeployPackage/*
 rm -rf DeployPackage
 echo Done.

@@ -25,8 +25,10 @@ public slots:
   void readCommand();
   void receiveMessageFromGiko(quint32 playerId, const QString &message);
   void receivePlayerName(quint32 playerId, const QString &playerName);
+  void receivePlayerPosition(quint32 playerId, int xPos, int yPos);
 signals:
   void sendMessageToGiko(const QString &msg);
+  void sendNewPositionToGiko(int xPos, int yPos, CPSharedObject::Direction direction);
   void quit();
 };
 
