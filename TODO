@@ -1,5 +1,3 @@
-- make default room and server configurable
-- test clear bubble
 - show real names instead of user IDs
 - keep a buffer of the log so that as soon as i open the web page i can see the last N messages of the convo
 - ConnectionWrapper::onerror() should make the entire process close

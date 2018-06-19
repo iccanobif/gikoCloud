@@ -69,6 +69,17 @@ int main(int argc, char *argv[])
             params.proxyHostname = splits[0];
             params.proxyPort = port;
         }
+        // ROOM
+        else if (strcmp(argv[i], "-r") == 0)
+        {
+            QString roomId(argv[++i]);
+            if (CPStageInfo::fromStageId(roomId) == nullptr)
+            {
+                fprintf(stderr, "Room %s is not valid.\n", roomId.toUtf8().constData());
+                return -1;
+            }
+            params.roomId = roomId; 
+        }
         else
         {
             fprintf(stderr, "Parameter %s not recognized.\n", argv[i]);

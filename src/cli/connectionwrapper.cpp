@@ -67,7 +67,7 @@ void ConnectionWrapper::onloginDetailsRequested()
 void ConnectionWrapper::onwaitingForStageEntry()
 {
     fprintf(stderr, "onwaitingForStageEntry\n");
-    conn->enterStage(this->cliParameters->room.name(), this->cliParameters->character);
+    conn->enterStage(this->cliParameters->roomId, this->cliParameters->character);
 }
 void ConnectionWrapper::stageEntrySuccessful()
 {

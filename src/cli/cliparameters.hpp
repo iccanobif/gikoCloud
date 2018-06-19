@@ -11,7 +11,7 @@ class CliParameters
   public:
     QString username = QString(" ");
     CPConnection::Server server = CPConnection::Foreign;
-    CPStageInfo room = CPStageInfo::GSquid;
+    QString roomId = QString("admin");
     CPSharedObject::Character character = CPSharedObject::Boon;
     QString proxyHostname = nullptr;
     int proxyPort = 0;
@@ -24,7 +24,7 @@ class CliParameters
                          server == 2 ? "Young" :
                          server == 3 ? "Vip" :
                          server == 4 ? "Kws" : "dunno")
-               + QString("\nRoom: ") + QString(room.name())
+               + QString("\nRoom: ") + roomId
                + QString("\nCharacter: ") + QString::number(character)
                + QString("\nProxy: ") + proxyHostname + QString(" port: ") + QString::number(proxyPort);
     }
