@@ -7,6 +7,7 @@
 #include "../net/connection.hpp"
 #include "connectionwrapper.hpp"
 #include "cliparameters.hpp"
+#include "playerinfo.hpp"
 
 class Controller : public QObject
 {
@@ -15,7 +16,7 @@ class Controller : public QObject
   ConnectionWrapper *connectionWrapper;
   QSocketNotifier *stdinNotifier;
   CliParameters *cliParameters;
-  std::map<quint32, QString> playerNames;
+  std::map<quint32, PlayerInfo> playerInfoMap;
 
 public:
   Controller(CliParameters *cliParameters, QObject *parent = 0);

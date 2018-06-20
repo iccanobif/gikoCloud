@@ -148,10 +148,10 @@ void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message
     //Prints username and message in JSON
 
     //TODO just concatenate a series of QStrings and then conver them to constData, no need to use sprintf()
-    char msgToPrint[10000]; 
+    char msgToPrint[10000];
     int msgToPrintLenght = sprintf(msgToPrint, "MSG {\"playerId\": %d, \"playerName\": \"%s\", \"message\": \"%s\"}\n",
                                    playerId,
-                                   playerNames[playerId].replace("\"", "\\\"").toUtf8().constData(),
+                                   playerInfoMap[playerId].username.replace("\"", "\\\"").toUtf8().constData(),
                                    QString(message).replace("\"", "\\\"").toUtf8().constData());
     // Directly using write() because for reasons I don't understand, printf() doesn't work (won't even call
     // write() as I could see from strace) when this program is run as a child_process from node.js...
@@ -165,7 +165,13 @@ void Controller::receivePlayerName(quint32 playerId, const QString &playerName)
                                    playerId,
                                    QString(playerName).replace("\"", "\\\"").toUtf8().constData());
     write(1, msgToPrint, msgToPrintLenght);
-    playerNames[playerId] = playerName;
+
+    if (playerInfoMap.count(playerId) == 0)
+    {
+        playerInfoMap[playerId] = PlayerInfo(QString(playerName), 0, 0);
+    }
+    else
+        playerInfoMap[playerId].username = QString(playerName);
 }
 
 void Controller::receivePlayerPosition(quint32 playerId, int xPos, int yPos)
@@ -176,4 +182,14 @@ void Controller::receivePlayerPosition(quint32 playerId, int xPos, int yPos)
                                    xPos,
                                    yPos);
     write(1, msgToPrint, msgToPrintLenght);
+
+    if (playerInfoMap.count(playerId) == 0)
+    {
+        playerInfoMap[playerId] = PlayerInfo(QString(""), xPos, yPos);
+    }
+    else
+    {
+        playerInfoMap[playerId].x = xPos;
+        playerInfoMap[playerId].y = yPos;
+    }
 }

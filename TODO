@@ -1,6 +1,10 @@
+- Need to store my own player ID somewhere, or i won't be able to figure out my current position in the map correctly
 - ConnectionWrapper::onerror() should make the entire process close
 - gikocloud.js should restart the backend process when it dies
 - just concatenate a series of QStrings and then conver them to constData, no need to use sprintf()
 - std::map<quint32, QString> playerNames should be a map from playerId to objects of a class PlayerInfo 
   keeping track of both their name and position (x, y)
 - Remove the enums like CPSharedObject::Character?
+- Being able to change rooms
+- Being able to move around
+- Artificial intelligence for moving to rooms where cool things are happening
