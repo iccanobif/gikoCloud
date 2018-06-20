@@ -29,7 +29,7 @@ void ConnectionWrapper::onHandshaken()
 }
 void ConnectionWrapper::onclientIdReceived(quint32 clientId)
 {
-    fprintf(stderr, "clientidreceived\n");
+    fprintf(stderr, "clientidreceived: %d\n", clientId);
     this->clientId = clientId;
 }
 void ConnectionWrapper::onerror(const QString &str)
@@ -72,7 +72,7 @@ void ConnectionWrapper::onwaitingForStageEntry()
 void ConnectionWrapper::stageEntrySuccessful()
 {
     fprintf(stderr, "Login completed\n");
-    emit connectionCompleted();
+    emit connectionCompleted(this->clientId);
 }
 
 void ConnectionWrapper::ondisconnected()

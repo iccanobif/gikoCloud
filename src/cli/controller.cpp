@@ -31,9 +31,11 @@ Controller::~Controller()
 // while getline() is blocking this thread, the connection object isn't handling incoming messages...
 // this might be okay for the initial connection when the CLI isn't accepting commands, but I probably
 // have to moveToThread() the connection after login.
-void Controller::startCLI()
+void Controller::startCLI(quint32 playerId)
 {
     fprintf(stderr, "startCLI()\n");
+
+    thisPlayerId = playerId;
 
     QThread::sleep(5);
     fprintf(stderr, "Finished sleeping.\n");
@@ -100,41 +102,28 @@ void Controller::readCommand()
     }
     else if (!strncmp(line, "move ", 5))
     {
-        QStringList splits = QString::fromUtf8(line).split(QChar(' '));
+        if (!canMove)
+        {
+            fprintf(stderr, "Still need to finish the previous movement.\n");
+            goto END;
+        }
+        char *direction = line + 5;
+        fprintf(stderr, "moving %s.\n", direction);
+        int x = playerInfoMap[thisPlayerId].x;
+        int y = playerInfoMap[thisPlayerId].y;
 
-        if (splits.count() != 4)
-        {
-            fprintf(stderr, "No good.\n");
-            goto END;
-        }
+        canMove = false;
 
-        bool convertedOk = false;
-        int x = splits.at(1).toInt(&convertedOk);
-        if (!convertedOk)
-        {
-            fprintf(stderr, "%s is not a good number.\n", splits[1].toUtf8().constData());
-            goto END;
-        }
-        int y = splits.at(2).toInt(&convertedOk);
-        if (!convertedOk)
-        {
-            fprintf(stderr, "%s is not a good number.\n", splits[2].toUtf8().constData());
-            goto END;
-        }
-        CPSharedObject::Direction dir;
-        if (splits.at(3) == "up")
-            dir = CPSharedObject::Up;
-        else if (splits.at(3) == "down")
-            dir = CPSharedObject::Down;
-        else if (splits.at(3) == "left")
-            dir = CPSharedObject::Left;
-        else if (splits.at(3) == "right")
-            dir = CPSharedObject::Right;
+        if (!strcmp(direction, "up"))
+            emit sendNewPositionToGiko(x, y, CPSharedObject::Up);
+        else if (!strcmp(direction, "down"))
+            emit sendNewPositionToGiko(x, y, CPSharedObject::Down);
+        else if (!strcmp(direction, "left"))
+            emit sendNewPositionToGiko(x, y, CPSharedObject::Left);
+        else if (!strcmp(direction, "right"))
+            emit sendNewPositionToGiko(x, y, CPSharedObject::Right);
         else
-            fprintf(stderr, "Direction no good.\n");
-
-        fprintf(stderr, "Movan to %d %d.\n", x, y);
-        emit sendNewPositionToGiko(x, y, dir);
+            fprintf(stderr, "Unrecognized command, sorry.\n");
     }
     else
         fprintf(stderr, "Unrecognized command, sorry.\n");
@@ -192,4 +181,7 @@ void Controller::receivePlayerPosition(quint32 playerId, int xPos, int yPos)
         playerInfoMap[playerId].x = xPos;
         playerInfoMap[playerId].y = yPos;
     }
+
+    if (playerId == thisPlayerId)
+        canMove = true;
 }

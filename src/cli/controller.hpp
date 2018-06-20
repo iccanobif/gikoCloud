@@ -17,12 +17,16 @@ class Controller : public QObject
   QSocketNotifier *stdinNotifier;
   CliParameters *cliParameters;
   std::map<quint32, PlayerInfo> playerInfoMap;
+  // canMove: set to false after I sent the server a request for moving the character and before I got back
+  // a confirmation of the new position
+  bool canMove = true; 
+  quint32 thisPlayerId;
 
 public:
   Controller(CliParameters *cliParameters, QObject *parent = 0);
   ~Controller();
 public slots:
-  void startCLI();
+  void startCLI(quint32 playerId);
   void readCommand();
   void receiveMessageFromGiko(quint32 playerId, const QString &message);
   void receivePlayerName(quint32 playerId, const QString &playerName);

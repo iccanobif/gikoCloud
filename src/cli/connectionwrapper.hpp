@@ -29,7 +29,7 @@ public slots:
   void ondisconnected();
 
 signals:
-  void connectionCompleted();
+  void connectionCompleted(quint32 playerId);
 
 private:
   quint32 clientId;
