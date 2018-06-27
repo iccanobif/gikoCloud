@@ -19,7 +19,7 @@ class Controller : public QObject
   std::map<quint32, PlayerInfo> playerInfoMap;
   // canMove: set to false after I sent the server a request for moving the character and before I got back
   // a confirmation of the new position
-  bool canMove = true; 
+  bool canMove = false; 
   quint32 thisPlayerId;
 
 public:

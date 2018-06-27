@@ -108,11 +108,14 @@ void Controller::readCommand()
             goto END;
         }
         char *direction = line + 5;
-        fprintf(stderr, "moving %s.\n", direction);
+
         int x = playerInfoMap[thisPlayerId].x;
         int y = playerInfoMap[thisPlayerId].y;
+        fprintf(stderr, "moving %s (current pos %d %d.\n", direction, x, y);
 
+        fprintf(stderr, "setting canMove to false.\n");
         canMove = false;
+        fprintf(stderr, "set canMove to false.\n");
 
         if (!strcmp(direction, "up"))
             emit sendNewPositionToGiko(x, y, CPSharedObject::Up);
@@ -135,25 +138,23 @@ END:
 void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message)
 {
     //Prints username and message in JSON
-
-    //TODO just concatenate a series of QStrings and then conver them to constData, no need to use sprintf()
-    char msgToPrint[10000];
-    int msgToPrintLenght = sprintf(msgToPrint, "MSG {\"playerId\": %d, \"playerName\": \"%s\", \"message\": \"%s\"}\n",
-                                   playerId,
-                                   playerInfoMap[playerId].username.replace("\"", "\\\"").toUtf8().constData(),
-                                   QString(message).replace("\"", "\\\"").toUtf8().constData());
+    QByteArray msgToPrint = QString::asprintf("MSG {\"playerId\": %d, \"playerName\": \"%s\", \"message\": \"%s\"}\n",
+                                              playerId,
+                                              playerInfoMap[playerId].username.replace("\"", "\\\"").toUtf8().constData(),
+                                              QString(message).replace("\"", "\\\"").toUtf8().constData())
+                                .toUtf8();
     // Directly using write() because for reasons I don't understand, printf() doesn't work (won't even call
     // write() as I could see from strace) when this program is run as a child_process from node.js...
-    write(1, msgToPrint, msgToPrintLenght);
+    write(1, msgToPrint.constData(), msgToPrint.length());
 }
 
 void Controller::receivePlayerName(quint32 playerId, const QString &playerName)
 {
-    char msgToPrint[10000];
-    int msgToPrintLenght = sprintf(msgToPrint, "PLAYER_NAME {\"playerId\": %d, \"playerName\": \"%s\"}\n",
-                                   playerId,
-                                   QString(playerName).replace("\"", "\\\"").toUtf8().constData());
-    write(1, msgToPrint, msgToPrintLenght);
+    QByteArray msgToPrint = QString::asprintf("PLAYER_NAME {\"playerId\": %d, \"playerName\": \"%s\"}\n",
+                                              playerId,
+                                              QString(playerName).replace("\"", "\\\"").toUtf8().constData())
+                                .toUtf8();
+    write(1, msgToPrint.constData(), msgToPrint.length());
 
     if (playerInfoMap.count(playerId) == 0)
     {
@@ -165,12 +166,12 @@ void Controller::receivePlayerName(quint32 playerId, const QString &playerName)
 
 void Controller::receivePlayerPosition(quint32 playerId, int xPos, int yPos)
 {
-    char msgToPrint[10000];
-    int msgToPrintLenght = sprintf(msgToPrint, "PLAYER_POSITION {\"playerId\": %d, \"x\": %d, \"y\": %d}\n",
-                                   playerId,
-                                   xPos,
-                                   yPos);
-    write(1, msgToPrint, msgToPrintLenght);
+    QByteArray msgToPrint = QString::asprintf("PLAYER_POSITION {\"playerId\": %d, \"x\": %d, \"y\": %d}\n",
+                                              playerId,
+                                              xPos,
+                                              yPos)
+                                .toUtf8();
+    write(1, msgToPrint.constData(), msgToPrint.length());
 
     if (playerInfoMap.count(playerId) == 0)
     {
@@ -183,5 +184,9 @@ void Controller::receivePlayerPosition(quint32 playerId, int xPos, int yPos)
     }
 
     if (playerId == thisPlayerId)
+    {
+        fprintf(stderr, "setting canMove to true.\n");
         canMove = true;
+        fprintf(stderr, "set canMove to true.\n");
+    }
 }
