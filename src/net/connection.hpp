@@ -439,7 +439,7 @@ signals:
      * @param[in] playerId The player who's character ID was sent.
      * @param[in] characterId The character ID for the player.
      */
-    void playerCharacterIdReceived(quint32 playerId, CPSharedObject::Character characterId);
+    void playerCharacterIdReceived(quint32 playerId, int characterId);
     /**
      * This signal is emitted when the server updates a player's message position.
      *
@@ -576,7 +576,7 @@ public slots:
      * @param[in] charId Client's character.
      *
      */
-    bool enterStage(const QString &stageId, CPSharedObject::Character charId);
+    bool enterStage(const QString &stageId, int charId);
     /**
      * Send a client message.
      *

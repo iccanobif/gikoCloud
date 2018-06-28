@@ -12,7 +12,7 @@ class CliParameters
     QString username = QString(" ");
     CPConnection::Server server = CPConnection::Foreign;
     QString roomId = QString("admin");
-    CPSharedObject::Character character = CPSharedObject::Boon;
+    int character = 1;
     QString proxyHostname = nullptr;
     int proxyPort = 0;
     QString parameterSummary()

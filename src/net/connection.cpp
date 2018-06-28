@@ -1127,7 +1127,7 @@ void CPConnection::sendSharedObjectRequest(CPSharedObject *so, const QVector<CPS
     this->write(buf);
 }
 
-bool CPConnection::enterStage(const QString &stage, CPSharedObject::Character charId)
+bool CPConnection::enterStage(const QString &stage, int charId)
 {
     const CPStageInfo *info = CPStageInfo::fromStageId(stage);
     if (info == nullptr) {

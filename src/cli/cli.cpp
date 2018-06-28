@@ -22,6 +22,18 @@ int main(int argc, char *argv[])
             }
             params.username = QString(argv[++i]);
         }
+        // CHARACTER
+        else if (strcmp(argv[i], "-c") == 0)
+        {
+            bool convertedOk = false;
+            int character = QString(argv[++i]).toInt(&convertedOk);
+            if (!convertedOk)
+            {
+                fprintf(stderr, "Invalid character id.\n");
+                return -1;
+            }
+            params.character = character;
+        }
         // SERVER
         else if (strcmp(argv[i], "-s") == 0)
         {
@@ -90,6 +102,8 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Starting with these settings:\n");
     fprintf(stderr, "%s\n", params.parameterSummary().toUtf8().constData());
 
+
+    // return 0;
     Controller c(&params, &app);
 
     fprintf(stderr, "before app.exec()\n");

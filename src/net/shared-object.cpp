@@ -58,8 +58,7 @@ void CPSharedObject::synchronize(const CPCodec &buf)
                 case 'b': {
                         double cid;
                         buf.decodeAmfNumber(&j, &cid);
-                        Character c = static_cast<Character>(int(cid));
-                        emit this->playerCharacterIdReceived(playerId, c);
+                        emit this->playerCharacterIdReceived(playerId, int(cid));
                     }
                     break;
                 case 'd': {

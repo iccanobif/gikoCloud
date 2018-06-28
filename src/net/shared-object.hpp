@@ -28,18 +28,6 @@ public:
     };
     Q_ENUM(MessagePosition);
 
-    enum Character : qint8 {
-        None = -1,
-        Giko = 1,
-        Shii,
-        Boon,
-        SantaGiko,
-        SantaShii,
-        FuroshikiGiko,
-        PianicaShii
-    };
-    Q_ENUM(Character)
-
     /**
      * Construct a SharedObject.
      * @param[in] parent The parent QObject.
@@ -125,7 +113,7 @@ signals:
      * @param[in] playerId The player who's character ID was sent.
      * @param[in] character The character ID for the player.
      */
-    void playerCharacterIdReceived(quint32 playerId, Character character);
+    void playerCharacterIdReceived(quint32 playerId, int character);
     /**
      * Emitted whenever an error is encountered.
      */
