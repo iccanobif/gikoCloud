@@ -1,8 +1,6 @@
 - ConnectionWrapper::onerror() should make the entire process close
 - gikocloud.js should restart the backend process when it dies
-- std::map<quint32, QString> playerNames should be a map from playerId to objects of a class PlayerInfo 
-  keeping track of both their name and position (x, y)
-- Remove the enums like CPSharedObject::Character?
+- After receiving a "move" command, the cli should put all the following commands in a buffer until canMove is true again, and then execute them
 - Being able to change rooms
 - Being able to move around
 - Artificial intelligence for moving to rooms where cool things are happening

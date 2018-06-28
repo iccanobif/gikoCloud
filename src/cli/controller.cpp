@@ -136,7 +136,7 @@ void Controller::readCommand()
     }
     else if (!strncmp(line, "face ", 5))
     {
-                char *direction = line + 5;
+        char *direction = line + 5;
 
         int x = playerInfoMap[thisPlayerId].x;
         int y = playerInfoMap[thisPlayerId].y;
@@ -156,6 +156,10 @@ void Controller::readCommand()
             fprintf(stderr, "Unrecognized command, sorry.\n");
 
         emit sendNewDirectionToGiko(x, y, dir);
+    }
+    else if (!strncmp(line, "help\0", 5))
+    {
+        fprintf(stderr, "Commands: msg, move, face.\n");
     }
     else
         fprintf(stderr, "Unrecognized command, sorry.\n");
@@ -224,10 +228,7 @@ void Controller::receivePlayerDirection(quint32 playerId, CPSharedObject::Direct
 {
     QByteArray msgToPrint = QString::asprintf("PLAYER_DIRECTION {\"playerId\": %d, \"dir\": \"%s\"}\n",
                                               playerId,
-                                              direction == CPSharedObject::Up ? "up" :
-                                              direction == CPSharedObject::Left ? "left" :
-                                              direction == CPSharedObject::Right ? "right" :
-                                              direction == CPSharedObject::Down ? "down" : "???")
+                                              direction == CPSharedObject::Up ? "up" : direction == CPSharedObject::Left ? "left" : direction == CPSharedObject::Right ? "right" : direction == CPSharedObject::Down ? "down" : "???")
                                 .toUtf8();
     write(1, msgToPrint.constData(), msgToPrint.length());
 }
