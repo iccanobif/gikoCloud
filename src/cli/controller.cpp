@@ -44,8 +44,10 @@ void Controller::startCLI(quint32 playerId)
 
     QObject::connect(this, &Controller::sendMessageToGiko, conn, &CPConnection::sendClientMessage);
     QObject::connect(this, &Controller::sendNewPositionToGiko, conn, &CPConnection::sendPosition);
+    QObject::connect(this, &Controller::sendNewDirectionToGiko, conn, &CPConnection::sendDirection);
     QObject::connect(conn, &CPConnection::playerMessageReceived, this, &Controller::receiveMessageFromGiko);
     QObject::connect(conn, &CPConnection::playerPositionChanged, this, &Controller::receivePlayerPosition);
+    QObject::connect(conn, &CPConnection::playerDirectionChanged, this, &Controller::receivePlayerDirection);
     QObject::connect(stdinNotifier, &QSocketNotifier::activated, this, &Controller::readCommand);
 }
 
@@ -117,16 +119,43 @@ void Controller::readCommand()
         canMove = false;
         fprintf(stderr, "set canMove to false.\n");
 
+        CPSharedObject::Direction dir;
+
         if (!strcmp(direction, "up"))
-            emit sendNewPositionToGiko(x, y, CPSharedObject::Up);
+            dir = CPSharedObject::Up;
         else if (!strcmp(direction, "down"))
-            emit sendNewPositionToGiko(x, y, CPSharedObject::Down);
+            dir = CPSharedObject::Down;
         else if (!strcmp(direction, "left"))
-            emit sendNewPositionToGiko(x, y, CPSharedObject::Left);
+            dir = CPSharedObject::Left;
         else if (!strcmp(direction, "right"))
-            emit sendNewPositionToGiko(x, y, CPSharedObject::Right);
+            dir = CPSharedObject::Right;
         else
             fprintf(stderr, "Unrecognized command, sorry.\n");
+
+        emit sendNewPositionToGiko(x, y, dir);
+    }
+    else if (!strncmp(line, "face ", 5))
+    {
+                char *direction = line + 5;
+
+        int x = playerInfoMap[thisPlayerId].x;
+        int y = playerInfoMap[thisPlayerId].y;
+        fprintf(stderr, "facing %s (current pos %d %d.\n", direction, x, y);
+
+        CPSharedObject::Direction dir;
+
+        if (!strcmp(direction, "up"))
+            dir = CPSharedObject::Up;
+        else if (!strcmp(direction, "down"))
+            dir = CPSharedObject::Down;
+        else if (!strcmp(direction, "left"))
+            dir = CPSharedObject::Left;
+        else if (!strcmp(direction, "right"))
+            dir = CPSharedObject::Right;
+        else
+            fprintf(stderr, "Unrecognized command, sorry.\n");
+
+        emit sendNewDirectionToGiko(x, y, dir);
     }
     else
         fprintf(stderr, "Unrecognized command, sorry.\n");
@@ -189,4 +218,16 @@ void Controller::receivePlayerPosition(quint32 playerId, int xPos, int yPos)
         canMove = true;
         fprintf(stderr, "set canMove to true.\n");
     }
+}
+
+void Controller::receivePlayerDirection(quint32 playerId, CPSharedObject::Direction direction)
+{
+    QByteArray msgToPrint = QString::asprintf("PLAYER_DIRECTION {\"playerId\": %d, \"dir\": \"%s\"}\n",
+                                              playerId,
+                                              direction == CPSharedObject::Up ? "up" :
+                                              direction == CPSharedObject::Left ? "left" :
+                                              direction == CPSharedObject::Right ? "right" :
+                                              direction == CPSharedObject::Down ? "down" : "???")
+                                .toUtf8();
+    write(1, msgToPrint.constData(), msgToPrint.length());
 }
