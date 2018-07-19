@@ -1270,6 +1270,7 @@ void CPConnection::leaveStage(bool rula)
     sendSharedObjectRequest(this->m_sharedObject, events);
 }
 
+//#list
 void CPConnection::requestStageLoginInfo()
 {
     CPCodec buf;

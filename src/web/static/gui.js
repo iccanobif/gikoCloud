@@ -6,6 +6,7 @@ $(function ()
 	let txtUsername = document.getElementById("txtUsername");
 	let txtMessage = document.getElementById("txtMessage");
 	let divLog = document.getElementById("divLog");
+	let divRoomList = document.getElementById("divRoomList");
 
 	btnSend.addEventListener("click", function ()
 	{
@@ -30,7 +31,7 @@ $(function ()
 	{
 		console.log("arrivato messaggio " + message);
 		messageList.push(message);
-		if (messageList.length > 10)
+		if (messageList.length > 100)
 			messageList = messageList.slice(1); // Removes the first value
 		renderMessageList();
 	});
@@ -40,5 +41,13 @@ $(function ()
 		console.log(log);
 		messageList = log;
 		renderMessageList();
-	})
+	});
+
+	gikoClient.setLoginListHandler((list) =>
+	{
+		divRoomList.innerHTML = JSON.parse(list)
+			.filter(x => x["count"] > 0) // Only rooms with at least one user
+			.map(x => "<b>" + x["stageName"] + "</b>:" + x["count"])
+			.join("; ");
+	});
 });

@@ -13,15 +13,24 @@
 </head>
 
 <body>
-    <h1>Giko-poy</h1>
-    User Name:
-    <input id="txtUsername" type="text" />
-    <br/> message:
-    <input id="txtMessage" type="text" />
-    <br/>
-    <input id="btnSend" type="button" value="send" />
-    <input id="btnClearBubble" type="button" value="clearBubble" />
-
+    <header>
+        <h1>Giko-poy</h1>
+        <div id="divInputs">
+            <div style="display: none">
+                User Name:
+                <input id="txtUsername" type="text" />
+                <br/>
+            </div>
+            message:
+            <input id="txtMessage" type="text" />
+            <br/>
+            <input id="btnSend" type="button" value="send" />
+            <input id="btnClearBubble" type="button" value="clearBubble" />
+        </div>
+        <div id="divRoomList">
+            still loading room list...
+        </div>
+    </header>
     <div id="divLog">
     </div>
 </body>

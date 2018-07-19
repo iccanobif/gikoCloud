@@ -48,6 +48,7 @@ void Controller::startCLI(quint32 playerId)
     QObject::connect(conn, &CPConnection::playerMessageReceived, this, &Controller::receiveMessageFromGiko);
     QObject::connect(conn, &CPConnection::playerPositionChanged, this, &Controller::receivePlayerPosition);
     QObject::connect(conn, &CPConnection::playerDirectionChanged, this, &Controller::receivePlayerDirection);
+    QObject::connect(conn, &CPConnection::stageLoginInfoReceived, this, &Controller::receiveStageLoginInfo);
     QObject::connect(stdinNotifier, &QSocketNotifier::activated, this, &Controller::readCommand);
 }
 
@@ -157,6 +158,10 @@ void Controller::readCommand()
 
         emit sendNewDirectionToGiko(x, y, dir);
     }
+    else if (!strncmp(line, "list\0", 5))
+    {
+        conn->requestStageLoginInfo();
+    }
     else if (!strncmp(line, "help\0", 5))
     {
         fprintf(stderr, "Commands: msg, move, face.\n");
@@ -231,4 +236,20 @@ void Controller::receivePlayerDirection(quint32 playerId, CPSharedObject::Direct
                                               direction == CPSharedObject::Up ? "up" : direction == CPSharedObject::Left ? "left" : direction == CPSharedObject::Right ? "right" : direction == CPSharedObject::Down ? "down" : "???")
                                 .toUtf8();
     write(1, msgToPrint.constData(), msgToPrint.length());
+}
+
+void Controller::receiveStageLoginInfo(const QStringList &stages, const QStringList &broadcasters, const QVector<int> &loginCounts)
+{
+    write(1, "#LIST [", 7);
+    for (int i = 0; i < stages.count(); i++)
+    {
+        QByteArray msgToPrint = QString::asprintf("{\"stageName\": \"%s\", \"count\": %d}",
+                                                  QString(stages[i]).replace("\"", "\\\"").toUtf8().constData(),
+                                                  loginCounts[i])
+                                    .toUtf8();
+        write(1, msgToPrint.constData(), msgToPrint.length());
+        if (i < stages.count() - 1)
+            write(1, ",", 1);
+    }
+    write(1, "]\n", 2);
 }

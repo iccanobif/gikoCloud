@@ -32,6 +32,7 @@ public slots:
   void receivePlayerName(quint32 playerId, const QString &playerName);
   void receivePlayerPosition(quint32 playerId, int xPos, int yPos);
   void receivePlayerDirection(quint32 playerId, CPSharedObject::Direction direction);
+  void receiveStageLoginInfo(const QStringList &stages, const QStringList &broadcasters, const QVector<int> &loginCounts);
 signals:
   void sendMessageToGiko(const QString &msg);
   void sendNewPositionToGiko(int xPos, int yPos, CPSharedObject::Direction direction);

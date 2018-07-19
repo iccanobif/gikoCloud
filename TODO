@@ -1,4 +1,3 @@
-- ConnectionWrapper::onerror() should make the entire process close
 - gikocloud.js should restart the backend process when it dies
 - After receiving a "move" command, the cli should put all the following commands in a buffer until canMove is true again, and then execute them
 - Being able to change rooms

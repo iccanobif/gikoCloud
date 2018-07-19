@@ -16,4 +16,9 @@ var GikoClient = function ()
     {
         socket.on("updateLog", callback);
     };
+
+    this.setLoginListHandler = function(callback)
+    {
+        socket.on("#list", callback);
+    };
 }

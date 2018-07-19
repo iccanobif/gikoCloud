@@ -1,9 +1,33 @@
-#divLog {
-    height: 200px;
-    overflow-y: auto;
-}
-
 body {
     color: red;
     background-color: black;
 }
+
+h1 {
+    font-size: 20px;
+}
+
+header
+{
+    position:fixed;
+    height: 140px;
+    top: 0;
+    background-color: black;
+}
+
+#divLog {
+    /* height: 200px;
+    overflow-y: auto; */
+    margin-top: 140px;
+}
+
+#divInputs {
+    display: inline-block;
+}
+
+#divRoomList
+{
+    display: inline-block;
+    vertical-align: top;
+}
+

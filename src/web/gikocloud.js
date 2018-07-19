@@ -49,6 +49,7 @@ socketio.on("connection", (socket) =>
     });
 });
 
+// Loop for sending queued messaged to gikopoi
 setInterval(() =>
 {
     try
@@ -67,6 +68,20 @@ setInterval(() =>
         printError(e);
     }
 }, 1000);
+
+//Loop for updating #list
+setInterval(() =>
+{
+    try
+    {
+        log("Sending to server list request");
+        backendProcess.stdin.write("list\n");
+    }
+    catch (e)
+    {
+        printError(e);
+    }
+}, 10000);
 
 app.get("/", (req, res) =>
 {
@@ -118,26 +133,45 @@ let parameters = [];
 });
 
 var backendProcess = child_process.spawn(config.getParameter("cli_path"), parameters);
-backendProcess.stdout.on("data", (data) =>
+
+(function ()
 {
-    String(data).trim().split("\n").forEach((line) =>
+    let readBuffer = "";
+    backendProcess.stdout.on("data", (data) =>
     {
-        if (line.startsWith("MSG "))
+        // I can't be sure that "data" has a complete line, so I have to fill a buffer and process a line only 
+        // when I actually see a \n in it.
+        readBuffer += data;
+        while (readBuffer.match(/\n/))
         {
-            // this message made gikocloud.js print some weird stuff
-            // {"user": "1", "message": "7/31 8/1 8:00 宴会場 「第１１回夏祭りギコSUMMER!」 ついに１０周年！詳細は#ｲﾍﾞﾝﾄ！ "}
-            gotMessageFromGikopoi(line.substring(4));
-        }
-        else
-        {
-            log("Got weird message from cli: " + line);
+            let line = readBuffer.slice(0, readBuffer.search(/\n/));
+            readBuffer = readBuffer.slice(readBuffer.search(/\n/) + 1);
+
+            if (line.startsWith("MSG "))
+            {
+                // this message made gikocloud.js print some weird stuff
+                // {"user": "1", "message": "7/31 8/1 8:00 宴会場 「第１１回夏祭りギコSUMMER!」 ついに１０周年！詳細は#ｲﾍﾞﾝﾄ！ "}
+                gotMessageFromGikopoi(line.substring(4));
+            }
+            else if (line.startsWith("#LIST "))
+            {
+                log("Got #list from backend");
+                socketio.emit("#list", line.substring("#LIST ".length));
+            }
+            else
+            {
+                log("Got weird message from cli: " + line);
+            }
         }
     });
-});
+})();
+
+
 backendProcess.stderr.on("data", (data) =>
 {
     log("[cli] (stderr): " + String(data).trim());
 });
+
 backendProcess.on("exit", (code, signal) =>
 {
     log("Backend process died...");

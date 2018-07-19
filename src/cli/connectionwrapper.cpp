@@ -35,6 +35,7 @@ void ConnectionWrapper::onclientIdReceived(quint32 clientId)
 void ConnectionWrapper::onerror(const QString &str)
 {
     fprintf(stderr, "onerror: %s\n", str.toUtf8().constData());
+    exit(-1);
 }
 void ConnectionWrapper::onserverResponse(bool isResult, const QString &command)
 {
