@@ -39,7 +39,8 @@ socketio.on("connection", (socket) =>
                 if (userName == "" && messageContent == "")
                     messageQueue.push("");    // Clears bubble
                 else
-                    messageQueue.push(userName + ": " + messageContent);
+                    // messageQueue.push(userName + ": " + messageContent);
+                    messageQueue.push(messageContent);
             }
         }
         catch (e)

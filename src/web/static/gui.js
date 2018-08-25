@@ -22,7 +22,10 @@ $(function ()
 
 	function renderMessageList()
 	{
-		divLog.innerHTML = messageList.join("<br />");
+		divLog.innerHTML = messageList
+			.map(x => JSON.parse(x))
+			.map(x => x["playerName"] + ": " + x["message"])
+			.join("<br />");
 		// Scroll to bottom. Might be nice to avoid that if the log wasn't already scrolled to bottom.
 		divLog.scrollTop = divLog.scrollHeight;
 	};

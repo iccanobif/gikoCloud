@@ -178,8 +178,8 @@ void Controller::receiveMessageFromGiko(quint32 playerId, const QString &message
     //Prints username and message in JSON
     QByteArray msgToPrint = QString::asprintf("MSG {\"playerId\": %d, \"playerName\": \"%s\", \"message\": \"%s\"}\n",
                                               playerId,
-                                              playerInfoMap[playerId].username.replace("\"", "\\\"").toUtf8().constData(),
-                                              QString(message).replace("\"", "\\\"").toUtf8().constData())
+                                              playerInfoMap[playerId].username.replace("\"", "\\\"").replace("\n", "").toUtf8().constData(),
+                                              QString(message).replace("\"", "\\\"").replace("\n", "").toUtf8().constData())
                                 .toUtf8();
     // Directly using write() because for reasons I don't understand, printf() doesn't work (won't even call
     // write() as I could see from strace) when this program is run as a child_process from node.js...
@@ -190,7 +190,7 @@ void Controller::receivePlayerName(quint32 playerId, const QString &playerName)
 {
     QByteArray msgToPrint = QString::asprintf("PLAYER_NAME {\"playerId\": %d, \"playerName\": \"%s\"}\n",
                                               playerId,
-                                              QString(playerName).replace("\"", "\\\"").toUtf8().constData())
+                                              QString(playerName).replace("\"", "\\\"").replace("\n", "").toUtf8().constData())
                                 .toUtf8();
     write(1, msgToPrint.constData(), msgToPrint.length());
 
